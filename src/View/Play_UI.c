@@ -1,4 +1,7 @@
-﻿#include "Play_UI.h"
+﻿#define _CRT_SECURE_NO_WARNINGS
+
+
+#include "Play_UI.h"
 #include <stdio.h>
 #include <string.h>
 #include "../Common/List.h"
