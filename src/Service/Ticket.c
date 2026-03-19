@@ -27,13 +27,7 @@ int Ticket_Srv_Init(ticket_list_t head, int schedule_id, int seat_id, int price)
 	return TICK_SUCCESS;
 }
 
-//增
-<<<<<<< HEAD
-int Ticket_Srv_Batch_Add(int schedule_id, int price) {
-	int studio_id = func(schedule_id);//TODO：获取剧院id
-	int studio_num
-		for()
-=======
+
 int Ticket_Srv_Batch_Add(ticket_list_t head, int schedule_id, int price) {
 	//int studio_id = func(schedule_id);//TODO：获取剧院id
 	//int studio_num = func(studio_id);//TODO：获取剧院大小
@@ -50,7 +44,6 @@ int Ticket_Srv_Batch_Add(ticket_list_t head, int schedule_id, int price) {
 	//	}
 	//}
 	return TICK_SUCCESS;
->>>>>>> 0f9192f78c673a4b09249f02f5a2fb83128e9b4f
 }
 
 
