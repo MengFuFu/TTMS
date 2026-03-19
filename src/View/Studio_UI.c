@@ -9,7 +9,7 @@
 */
 #define _CRT_SECURE_NO_WARNINGS
 #include "../View/Studio_UI.h"
-
+#include "../View/Seat_UI.h"
 #include "../Common/List.h"
 #include "../Service/Studio.h"
 #include "../Service/Seat.h"
@@ -98,7 +98,7 @@ void Studio_UI_MgtEntry(void) {
         case 's':
         case 'S':
             id = readInt("Input the ID:");
-            //Seat_UI_MgtEntry(id);
+            Seat_UI_MgtEntry(id);
             paging.totalRecords = Studio_Srv_FetchAll(head);
             List_Paging(head, paging, studio_node_t);
             break;

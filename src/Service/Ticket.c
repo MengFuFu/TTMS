@@ -28,7 +28,7 @@ int Ticket_Srv_Init(ticket_list_t head, int schedule_id, int seat_id, int price)
 int Ticket_Srv_Batch_Add(int schedule_id, int price) {
 	int studio_id = func(schedule_id);//TODO£∫ªÒ»°æÁ‘∫id
 	int studio_num
-	for()
+		for()
 }
 
 //…æ
