@@ -49,21 +49,34 @@ int Ticket_Srv_Batch_Add(ticket_list_t head, int schedule_id, int price) {
 
 
 
-//通过时间删除
+// 通过时间删除过期票
 int Ticket_Srv_Batch_Delete(ticket_list_t head) {
-	if (List_IsEmpty(head)) {
-		return TICK_LIST_EMPTY;
-	}
-	ticket_node_t* cur;
-	int delete_ret = 0;
-	//List_ForEach(head, cur) {
-	//	if (func(cur->data.schedule_id)) {//通过剧目id来确定时间是否已过
-	//		delete_ret = Ticket_Perst_DeleteByID(cur->data.id);
-	//		List_FreeNode(cur);
-	//	}
+	//assert(head != NULL); 
+
+	//if (List_IsEmpty(head)) {
+	//	return TICK_LIST_EMPTY;
 	//}
-	//cur = NULL;
-	return delete_ret;
+
+	//ticket_node_t* cur, * tmp;
+	//int count = 0;
+
+	//cur = head->next;
+	//while (cur != head) {
+	//	tmp = cur->next;
+
+	//	// func = 判断场次是否已过期
+	//	if (func(cur->data.schedule_id)) {
+	//		// 先删文件
+	//		Ticket_Perst_DeleteByID(cur->data.id);
+	//		// 再删内存
+	//		List_FreeNode(cur);
+	//		count++;
+	//	}
+
+	//	cur = tmp;
+	//}
+
+	//return count;
 }
 
 //查座位对应票的
@@ -104,17 +117,29 @@ int Ticket_Srv_Mov_Status(ticket_list_t head, int schedule_id, int seat_id, int 
 
 //通过场次删除
 int Ticket_Srv_DeleteByScheduleID(ticket_list_t head, int schedule_id) {
+	assert(head != NULL);
+
 	if (List_IsEmpty(head)) {
 		return TICK_LIST_EMPTY;
 	}
-	ticket_node_t* cur;
-	int delete_ret = 0;
-	List_ForEach(head, cur) {
+
+	ticket_node_t* cur, * tmp;
+	int count = 0;
+
+	cur = head->next;
+	while (cur != head) {
+		tmp = cur->next;
+
 		if (cur->data.schedule_id == schedule_id) {
-			delete_ret = Ticket_Perst_DeleteByID(cur->data.id);
+			// 先删文件
+			Ticket_Perst_DeleteByID(cur->data.id);
+			// 再删内存
 			List_FreeNode(cur);
+			count++;
 		}
+
+		cur = tmp;
 	}
-	cur = NULL;
-	return delete_ret;
+
+	return count;
 }
