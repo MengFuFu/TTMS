@@ -27,11 +27,6 @@ int Ticket_Srv_Init(ticket_list_t head, int schedule_id, int seat_id, int price)
 	return TICK_SUCCESS;
 }
 
-<<<<<<< HEAD
-//增
-=======
-
->>>>>>> 5262bf18800acafaf6c7dfce0d7ba45108f358bd
 int Ticket_Srv_Batch_Add(ticket_list_t head, int schedule_id, int price) {
 	//int studio_id = func(schedule_id);//TODO：获取剧院id
 	//int studio_num = func(studio_id);//TODO：获取剧院大小
