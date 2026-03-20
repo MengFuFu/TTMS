@@ -22,5 +22,7 @@ int main(void) {
 	SetConsoleCP(CP_UTF8);
 	setvbuf(stdout, NULL, _IONBF, 0);
 	Main_Menu();*/
+	Sale_UI_MgtEntry();
+	/*Main_Menu();*/
 	return EXIT_SUCCESS;
 }

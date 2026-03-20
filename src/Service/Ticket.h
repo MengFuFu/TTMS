@@ -4,7 +4,7 @@
 #include "../Common/List.h"
 #include "../Common/common.h"
 
-// ´íÎóÂë
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 enum TICK_ERR {
 	TICK_SUCCESS = 0,
 	TICK_INIT_ERR,
@@ -13,14 +13,15 @@ enum TICK_ERR {
 	TICK_NO_EXIST
 };
 
-// Æ±×´Ì¬
+// ç¥¨çŠ¶æ€
 typedef enum {
-	TICKET_AVL = -1,   // ¿ÉÊÛ
-	TICKET_SOLD = -2,  // ÒÑÊÛ
-	TICKET_RESV = -3   // ÒÑÔ¤¶©
+	TICKET_AVL = -1,   // å¯å”®
+	TICKET_SOLD = -2,  // å·²å”®
+	TICKET_RESV = -3,  // å·²é¢„è®¢
+	TICKET_RETURNED = -4 // å·²é€€ç¥¨
 } ticket_status_t;
 
-// Æ±½á¹¹Ìå
+// Æ±ï¿½á¹¹ï¿½ï¿½
 typedef struct Ticket {
 	int id;
 	int schedule_id;
@@ -31,7 +32,7 @@ typedef struct Ticket {
 
 
 
-// Á´±í½Úµã
+// ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½
 typedef struct ticket_node {
 	ticket_t data;
 	struct ticket_node* prev, * next;
@@ -39,7 +40,7 @@ typedef struct ticket_node {
 
 
 extern ticket_list_t ticket_list;
-// ===================== º¯ÊıÉùÃ÷ =====================
+// ===================== ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ =====================
 int Ticket_List_Init(ticket_list_t list);
 int Ticket_Srv_Init(ticket_list_t head, int schedule_id, int seat_id, int price);
 int Ticket_Srv_Batch_Add(ticket_list_t head, int schedule_id, int price);
