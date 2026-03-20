@@ -17,7 +17,7 @@ static int safeInputStringInternal(char* buffer, int size) {
     int c = 0;
 
     if (buffer == NULL || size <= 1) {
-        printf("错误：缓冲区参数非法！\n");
+        printf("错误：缓冲区参数非法!\n");
         return -1;
     }
 
@@ -30,7 +30,7 @@ static int safeInputStringInternal(char* buffer, int size) {
         }
         else {
             clearerr(stdin);
-            printf("读取失败，请重试！\n");
+            printf("读取失败，请重试! \n");
             return -2;
         }
     }
@@ -42,12 +42,13 @@ static int safeInputStringInternal(char* buffer, int size) {
     }
     else {
         while ((c = getchar()) != '\n' && c != EOF);
-        printf("输入过长，已自动截断！\n");
+        printf("输入过长，已自动截断 \n");
+        /*printf("\n");*/
     }
 
     /* 检查空输入（含仅空白符的字符串） */
     if (strlen(buffer) == 0) {
-        printf("输入不能为空！请重新输入！\n");
+        printf("输入不能为空！请重新输入! \n");
         return SAFE_INPUT_EMPTY;
     }
 
@@ -79,7 +80,7 @@ void readString(char* buffer, int size, const char* prompt) {
     int ret;
 
     if (buffer == NULL || size <= 1) {
-        printf("【严重错误】缓冲区必须是字符数组，且大小必须大于1！\n");
+        printf("【严重错误】缓冲区必须是字符数组，且大小必须大于1! \n");
         return;
     }
 
@@ -103,7 +104,7 @@ int StrToInt(int* num, char* input) {
     long val = 0;
 
     if (num == NULL || input == NULL) {
-        printf("错误：参数不能为空！\n");
+        printf("错误：参数不能为空! \n");
         return 0;
     }
 
@@ -113,11 +114,11 @@ int StrToInt(int* num, char* input) {
 
     /* 错误判断：无任何数字 / 溢出 / 超出int范围 */
     if (end == input) {
-        printf("输入错误！未输入任何数字。\n");
+        printf("输入错误！未输入任何数字!\n");
         return 0;
     }
     if (errno == ERANGE || val < INT_MIN || val > INT_MAX) {
-        printf("输入错误！数值超出int范围（%d ~ %d）！\n", INT_MIN, INT_MAX);
+        printf("输入错误！数值超出int范围!\n");
         return 0;
     }
 
