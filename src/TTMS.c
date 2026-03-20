@@ -17,9 +17,10 @@
 
 //系统运行入口函数main 
 int main(void) {
-	SetConsoleOutputCP(CP_UTF8);
+	Ticket_UI_Main();
+	/*SetConsoleOutputCP(CP_UTF8);
 	SetConsoleCP(CP_UTF8);
 	setvbuf(stdout, NULL, _IONBF, 0);
-	Main_Menu();
+	Main_Menu();*/
 	return EXIT_SUCCESS;
 }

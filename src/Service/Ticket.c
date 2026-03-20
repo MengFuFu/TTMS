@@ -31,9 +31,9 @@ int Ticket_Srv_Batch_Add(ticket_list_t head, int schedule_id, int price) {
 	//int studio_id = func(schedule_id);//TODO：获取剧院id
 	//int studio_num = func(studio_id);//TODO：获取剧院大小
 	int seat_begin_id, seat_end_id;
-	//int ret = func(&seat_begin_id, &seat_end_id);
+	//int ret = func(&seat_begin_id, &seat_end_id); 
 	////TODO:错误处理
-	//for (int i = seat_begin_id; i <= seat_end_id; i++) {
+	//for (int i = seat_begin_id; i <=   seat_end_id; i++) {
 	//	if (func(studio_id/*, 座位id*/)) {
 	//		//剧院对应的座位合法，生成票
 	//		int init_ret = Ticket_Srv_Init(head, schedule_id, i, price);
@@ -46,7 +46,7 @@ int Ticket_Srv_Batch_Add(ticket_list_t head, int schedule_id, int price) {
 }
 
 
-
+  
 
 
 // 通过时间删除过期票
