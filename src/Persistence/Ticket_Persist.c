@@ -8,7 +8,7 @@
 #include "./Ticket_Persist.h"
 
 // ====================== ֻ�޸�����ļ������� ======================
-static const char TICKET_DATA_FILE[] = "Ticket.dat"; //Ʊ��洢�ļ������� 
+static const char TICKET_DATA_FILE[] = "Ticket.dat"; //Ʊ��洢�ļ�������?
 static const char TICKET_DATA_TEMP_FILE[] = "TicketTmp.dat"; //ɾ��Ʊ��ʱ�ļ������� 
 // ====================================================================
 static const char TICKET_KEY_NAME[] = "Ticket"; //Ʊ������ 
@@ -17,14 +17,14 @@ static const char TICKET_KEY_NAME[] = "Ticket"; //Ʊ������
 int Ticket_Perst_Insert(ticket_t* data) {
 	assert(NULL != data);
 
-	////����������Ʒ����������ӵĴ���
-	////����������Ʒ����������ӵĴ���
-	long key = EntKey_Perst_GetNewKeys(TICKET_KEY_NAME, 1); //Ϊ���ݳ��������ȡ
+	////����������Ʒ����������ӵĴ���?
+	////����������Ʒ����������ӵĴ���?
+	long key = EntKey_Perst_GetNewKeys(TICKET_KEY_NAME, 1); //Ϊ���ݳ���������?
 	if (key <= 0)			//��������ʧ�ܣ�ֱ�ӷ���
 		return 0;
+
 	data->id = key;		//�����¶�����ص�UI��
-	////����������Ʒ����������ӵĴ���
-	////����������Ʒ����������ӵĴ���
+
 
 	FILE* fp = fopen(TICKET_DATA_FILE, "ab");
 	int rtn = 0;
@@ -52,7 +52,6 @@ int Ticket_Perst_Update(const ticket_t* data) {
 	ticket_t buf;
 	int found = 0;
 
-	// ====================== �޸���feof ���¶������� ======================
 	while (fread(&buf, sizeof(ticket_t), 1, fp) == 1)
 		// ====================================================================
 	{
@@ -72,7 +71,6 @@ int Ticket_Perst_Update(const ticket_t* data) {
 int Ticket_Perst_DeleteByID(int ID) {
 	//��ԭʼ�ļ���������Ȼ���ȡ��������д�뵽�����ļ��У�����Ҫɾ����ʵ����˵���
 
-	//��ԭʼ�����ļ�������
 	if (rename(TICKET_DATA_FILE, TICKET_DATA_TEMP_FILE) < 0) {
 		printf("Cannot open file %s!\n", TICKET_DATA_FILE);
 		return 0;
@@ -94,7 +92,6 @@ int Ticket_Perst_DeleteByID(int ID) {
 	ticket_t buf;
 	int found = 0;
 
-	// ====================== �޸���feof ���¶������� ======================
 	while (fread(&buf, sizeof(ticket_t), 1, fpSour) == 1)
 		// ====================================================================
 	{
@@ -125,7 +122,6 @@ int Ticket_Perst_SelectByID(int ID, ticket_t* buf) {
 	ticket_t data;
 	int found = 0;
 
-	// ====================== �޸���feof ���¶������� ======================
 	while (fread(&data, sizeof(ticket_t), 1, fp) == 1)
 		// ====================================================================
 	{
@@ -155,7 +151,6 @@ int Ticket_Perst_SelectAll(ticket_list_t list) {
 		return 0;
 	}
 
-	// ====================== �޸���feof ���¶������� ======================
 	while (fread(&data, sizeof(ticket_t), 1, fp) == 1)
 		// ====================================================================
 	{
