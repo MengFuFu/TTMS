@@ -17,7 +17,7 @@ int Ticket_Perst_Update(const ticket_t *data);
 int Ticket_Perst_DeleteByID(int ID);
 int Ticket_Perst_SelectByID(int ID, ticket_t *buf);
 int Ticket_Perst_SelectBySchID(int id, ticket_list_t list);
-ticket_list_t Ticket_Perst_SelectBySeatID(ticket_list_t list, int seat_id);
+ticket_node_t* Ticket_Perst_SelectBySeatID(ticket_list_t list, int seat_id);
 int Ticket_Perst_SelectAll(ticket_list_t list);
 
 #endif

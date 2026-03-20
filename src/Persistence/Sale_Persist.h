@@ -21,11 +21,11 @@ int Sale_Perst_SelectAll(sale_list_t list);
 int Ticket_Perst_SelectBySchID(int id, ticket_list_t list);
 ticket_node_t* Ticket_Perst_SelectBySeatID(ticket_list_t list, int seat_id);
 
-int Schedule_Perst_Insert(const schedule_t *data);
-int Schedule_Perst_Update(const schedule_t *data);
-int Schedule_Perst_DeleteByID(int id);
-int Schedule_Perst_SelectByID(int id, schedule_t *buf);
-int Schedule_Perst_SelectByPlayID(schedule_list_t list, int playID);
-int Schedule_Perst_SelectAll(schedule_list_t list);
+//int Schedule_Perst_Insert(const schedule_t *data);
+//int Schedule_Perst_Update(const schedule_t *data);
+//int Schedule_Perst_DeleteByID(int id);
+//int Schedule_Perst_SelectByID(int id, schedule_t *buf);
+//int Schedule_Perst_SelectByPlayID(schedule_list_t list, int playID);
+//int Schedule_Perst_SelectAll(schedule_list_t list);
 
 #endif
