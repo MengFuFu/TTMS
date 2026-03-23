@@ -112,6 +112,7 @@ int Studio_UI_Add(void) {
     studio_t rec;
     int newRecCount = 0;
     char choice[10];
+    seat_list_t seatList;
 
     do {
         printf("\n=======================================================\n");
@@ -123,11 +124,17 @@ int Studio_UI_Add(void) {
         rec.colsCount = readInt("Column Count of Seats:");
 
         rec.seatsCount = rec.rowsCount * rec.colsCount;
+        printf("Total Seats Count: %d\n", rec.seatsCount);
         printf("=======================================================\n");
 
         if (Studio_Srv_Add(&rec)) {
             newRecCount += 1;
             printf("The new room added successfully!\n");
+            
+            List_Init(seatList, seat_node_t);
+            int initCount = Seat_Srv_RoomInit(seatList, rec.id, rec.rowsCount, rec.colsCount);
+            printf("Initialized %d seats with status '#' (Good).\n", initCount);
+            List_Destroy(seatList, seat_node_t);
         }
         else {
             printf("The new room added failed!\n");

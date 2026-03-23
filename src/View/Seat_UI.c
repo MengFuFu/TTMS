@@ -7,6 +7,30 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <windows.h>
+
+static HANDLE hConsole = NULL;
+
+static void Seat_UI_InitConsole(void) {
+    if (hConsole == NULL) {
+        hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    }
+}
+
+static void Seat_UI_SetColor(int color) {
+    Seat_UI_InitConsole();
+    SetConsoleTextAttribute(hConsole, color);
+}
+
+static void Seat_UI_ResetColor(void) {
+    Seat_UI_SetColor(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+}
+
+static void Seat_UI_PrintColorBlock(int color) {
+    Seat_UI_SetColor(color);
+    printf("  ");
+    Seat_UI_ResetColor();
+}
 
 char Seat_UI_Status2Char(seat_status_t status) {
     switch (status) {
@@ -31,26 +55,50 @@ static void Seat_UI_PrintMatrix(seat_list_t list, int rows, int cols) {
     seat_node_t* pos;
 
     printf("\n==================== Seat Matrix ====================\n");
-    printf("   ");
-    for (c = 1; c <= cols; c++) printf("%2d", c);
+    printf("    ");
+    for (c = 1; c <= cols; c++) printf("%-4d", c);
     printf("\n");
 
     for (r = 1; r <= rows; r++) {
-        printf("%2d ", r);
+        printf("%-3d", r);
         for (c = 1; c <= cols; c++) {
-            char statusChar = ' ';
+            seat_status_t status = SEAT_NONE;
             List_ForEach(list, pos) {
                 if (pos->data.row == r && pos->data.column == c) {
-                    statusChar = Seat_UI_Status2Char(pos->data.status);
+                    status = pos->data.status;
                     break;
                 }
             }
-            printf(" %c", statusChar);
+            switch (status) {
+            case SEAT_GOOD:
+                Seat_UI_PrintColorBlock(BACKGROUND_GREEN | BACKGROUND_INTENSITY);
+                break;
+            case SEAT_BROKEN:
+                Seat_UI_PrintColorBlock(BACKGROUND_RED | BACKGROUND_INTENSITY);
+                break;
+            case SEAT_NONE:
+            default:
+                Seat_UI_PrintColorBlock(BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE | BACKGROUND_INTENSITY);
+                break;
+            }
+            printf("  ");
         }
-        printf("\n");
+        printf("\n\n");
     }
     printf("======================================================\n");
-    printf("Status: #=Good | x=Broken |  =None\n");
+    printf("Status: ");
+    Seat_UI_SetColor(BACKGROUND_GREEN | BACKGROUND_INTENSITY);
+    printf("  ");
+    Seat_UI_ResetColor();
+    printf(" Good  ");
+    Seat_UI_SetColor(BACKGROUND_RED | BACKGROUND_INTENSITY);
+    printf("  ");
+    Seat_UI_ResetColor();
+    printf(" Broken  ");
+    Seat_UI_SetColor(BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE | BACKGROUND_INTENSITY);
+    printf("  ");
+    Seat_UI_ResetColor();
+    printf(" None\n");
 }
 
 void Seat_UI_MgtEntry(int roomID) {
