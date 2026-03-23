@@ -104,3 +104,6 @@ tmp/
 .env
 .env.local
 *.dat
+
+*.bat
+*.ps1
