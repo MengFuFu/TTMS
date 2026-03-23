@@ -1,12 +1,11 @@
 #define _CRT_SECURE_NO_WARNINGS
 /*
 * Copyright(C), 2007-2008, XUPT Univ.
-* 用例编号：TTMS_UC_XX
 * File name: Account_Persist.c
-* Description : 账户用例持久化层
+* Description: Account data persistence layer
 * Author:   XUPT
 * Version:  v.1
-* Date: 	2025年
+* Date:     2025
 */
 
 #include "Account_Persist.h"
@@ -18,20 +17,13 @@
 #include <assert.h>
 #include <string.h>
 
-static const char ACCOUNT_DATA_FILE[] = "Account.dat";       // 账户数据文件名
-static const char ACCOUNT_DATA_TEMP_FILE[] = "AccountTmp.dat";// 账户临时文件名
-static const char ACCOUNT_KEY_NAME[] = "Account";            // 账户主键名
+static const char ACCOUNT_DATA_FILE[] = "Account.dat";
+static const char ACCOUNT_DATA_TEMP_FILE[] = "AccountTmp.dat";
+static const char ACCOUNT_KEY_NAME[] = "Account";
 
-/*
-标识符：TTMS_SCU_Account_Perst_Insert
-函数功能：向文件中添加一个新账户数据
-参数说明：data 为 account_t 类型指针，待添加的账户数据
-返 回 值：1 表示成功，0 表示失败
-*/
 int Account_Perst_Insert(account_t* data) {
     assert(NULL != data);
 
-    // 分配新主键
     long key = EntKey_Perst_GetNewKeys(ACCOUNT_KEY_NAME, 1);
     if (key <= 0) {
         return 0;
@@ -50,12 +42,6 @@ int Account_Perst_Insert(account_t* data) {
     return rtn;
 }
 
-/*
-标识符：TTMS_SCU_Account_Perst_Update
-函数功能：在文件中更新一个账户数据
-参数说明：data 为 account_t 类型指针，待更新的账户数据
-返 回 值：1 表示成功，0 表示失败
-*/
 int Account_Perst_Update(const account_t* data) {
     assert(NULL != data);
 
@@ -82,12 +68,6 @@ int Account_Perst_Update(const account_t* data) {
     return found;
 }
 
-/*
-标识符：TTMS_SCU_Account_Perst_DeleteByID
-函数功能：从文件中删除一个账户数据
-参数说明：ID 为待删除账户的 ID
-返 回 值：1 表示成功，0 表示失败
-*/
 int Account_Perst_DeleteByID(int ID) {
     if (rename(ACCOUNT_DATA_FILE, ACCOUNT_DATA_TEMP_FILE) < 0) {
         printf("Cannot open file %s!\n", ACCOUNT_DATA_FILE);
@@ -125,12 +105,6 @@ int Account_Perst_DeleteByID(int ID) {
     return found;
 }
 
-/*
-标识符：TTMS_SCU_Account_Perst_SelectByID
-函数功能：根据 ID 载入一个账户数据
-参数说明：ID 为账户 ID，buf 为存储载入数据的指针
-返 回 值：1 表示成功，0 表示失败
-*/
 int Account_Perst_SelectByID(int ID, account_t* buf) {
     assert(NULL != buf);
 
@@ -155,12 +129,6 @@ int Account_Perst_SelectByID(int ID, account_t* buf) {
     return found;
 }
 
-/*
-标识符：TTMS_SCU_Account_Perst_SelectByName
-函数功能：根据用户名载入一个账户数据
-参数说明：username 为用户名，buf 为存储载入数据的指针
-返 回 值：1 表示成功，0 表示失败
-*/
 int Account_Perst_SelectByName(const char* username, account_t* buf) {
     assert(NULL != username && NULL != buf);
 
@@ -185,12 +153,6 @@ int Account_Perst_SelectByName(const char* username, account_t* buf) {
     return found;
 }
 
-/*
-标识符：TTMS_SCU_Account_Perst_SelectAll
-函数功能：载入所有账户数据到链表
-参数说明：list 为 account_list_t 类型指针，指向账户链表头指针
-返 回 值：成功载入的账户个数
-*/
 int Account_Perst_SelectAll(account_list_t list) {
     account_node_t* newNode;
     account_t data;
@@ -212,6 +174,7 @@ int Account_Perst_SelectAll(account_list_t list) {
                 break;
             }
             newNode->data = data;
+            newNode->next = newNode->prev = newNode;
             List_AddTail(list, newNode);
             recCount++;
         }

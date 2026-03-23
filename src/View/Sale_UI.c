@@ -1,395 +1,184 @@
-/*
-* Copyright(C), 2007-2008, XUPT Univ.
-* 用例编号：TTMS_UC_08
-* File name: Sale_UI.c
-* Description : 售票界面层实现
-* Author:   XUPT
-* Version:  v.1
-* Date: 	2015年4月22日
-*/
-
 #define _CRT_SECURE_NO_WARNINGS
-#include "Sale_UI.h"
-
 #include "../Common/List.h"
+#include "Sale_UI.h"
 #include "../Service/Sale.h"
-#include "../Service/Seat.h"
-#include "../Service/Schedule.h"
 #include "../Service/Ticket.h"
+#include "../Service/Seat.h"
+#include "../Service/Account.h"
+#include "../Common/common.h"
 #include "../SafeStdin/safe_stdin.h"
-#include <stdio.h>
 #include <string.h>
-#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-static const int SALE_PAGE_SIZE = 5;
+extern account_t gl_CurUser;
 
-static void Sale_UI_GetCurrentTime(char *timeBuf, int bufSize) {
-    if (!timeBuf || bufSize < 20) return;
-    
-    time_t now = time(NULL);
-    struct tm *t = localtime(&now);
-    if (t) {
-        snprintf(timeBuf, bufSize, "%04d-%02d-%02d %02d:%02d",
-                 t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
-                 t->tm_hour, t->tm_min);
+static int Sale_UI_Login(void) {
+    char username[20] = { 0 };
+    char password[20] = { 0 };
+    printf("Login required.\n");
+    readString(username, sizeof(username), "Username: ");
+    readString(password, sizeof(password), "Password: ");
+    if (!Account_Srv_Verify(username, password)) {
+        printf("Login failed!\n");
+        return 0;
     }
+    return 1;
 }
 
-static void Sale_UI_Status2Str(ticket_status_t status, char *buf) {
-    if (!buf) return;
-    switch (status) {
-        case TICKET_AVL:     strcpy(buf, "Available"); break;
-        case TICKET_SOLD:    strcpy(buf, "Sold"); break;
-        case TICKET_RETURNED: strcpy(buf, "Returned"); break;
-        case TICKET_RESV:    strcpy(buf, "Reserved"); break;
-        default: strcpy(buf, "Unknown");
+int Sale_UI_SellTicket(void) {
+    printf("\n================ Sell Ticket ================\n");
+    if (!Sale_UI_Login()) return 0;
+
+    int ticketID = 0;
+    ticket_t ticket;
+    seat_t seat;
+
+    ticketID = readInt("Input ticket ID to sell: ");
+
+    if (!Ticket_Srv_FetchByID(ticketID, &ticket)) {
+        printf("Ticket not found!\n");
+        return 0;
     }
+    if (ticket.status != TICKET_AVL) {
+        printf("Ticket is not available for sale (status=%d)!\n", ticket.status);
+        return 0;
+    }
+    if (!Seat_Srv_FetchByID(ticket.seat_id, &seat)) {
+        printf("Seat not found for this ticket!\n");
+        return 0;
+    }
+    if (seat.status != SEAT_GOOD) {
+        printf("Seat is not available (status=%d)!\n", seat.status);
+        return 0;
+    }
+
+    ticket.status = TICKET_SOLD;
+    ticket.date = DateNow();
+    ticket.time = TimeNow();
+    if (!Ticket_Srv_Update(&ticket)) {
+        printf("Failed to update ticket status!\n");
+        return 0;
+    }
+
+    seat.status = SEAT_NONE;
+    if (!Seat_Srv_Modify(&seat)) {
+        ticket.status = TICKET_AVL;
+        Ticket_Srv_Update(&ticket);
+        printf("Failed to update seat status!\n");
+        return 0;
+    }
+
+    sale_t sale;
+    memset(&sale, 0, sizeof(sale));
+    sale.user_id = gl_CurUser.id;
+    sale.ticket_id = ticket.id;
+    sale.price = ticket.price;
+    {
+        user_date_t d = DateNow();
+        user_time_t t = TimeNow();
+        sprintf(sale.sale_time, "%04d-%02d-%02d %02d:%02d:%02d",
+            d.year, d.month, d.day, t.hour, t.minute, t.second);
+    }
+
+    if (Sale_Srv_Add(&sale) <= 0) {
+        ticket.status = TICKET_AVL;
+        Ticket_Srv_Update(&ticket);
+        seat.status = SEAT_GOOD;
+        Seat_Srv_Modify(&seat);
+        printf("Failed to insert sale record!\n");
+        return 0;
+    }
+
+    printf("Sell success! TicketID=%d SeatID=%d\n", ticket.id, ticket.seat_id);
+    return 1;
+}
+
+int Sale_UI_ReturnTicket(void) {
+    printf("\n================ Return Ticket ================\n");
+    if (!Sale_UI_Login()) return 0;
+
+    int ticketID = 0;
+    ticket_t ticket;
+    seat_t seat;
+
+    ticketID = readInt("Input ticket ID to return: ");
+
+    if (!Ticket_Srv_FetchByID(ticketID, &ticket)) {
+        printf("Ticket not found!\n");
+        return 0;
+    }
+    if (ticket.status != TICKET_SOLD) {
+        printf("Ticket is not sold yet (status=%d)!\n", ticket.status);
+        return 0;
+    }
+
+    ticket.status = TICKET_AVL;
+    ticket.date = DateNow();
+    ticket.time = TimeNow();
+    if (!Ticket_Srv_Update(&ticket)) {
+        printf("Failed to update ticket status!\n");
+        return 0;
+    }
+
+    if (!Seat_Srv_FetchByID(ticket.seat_id, &seat)) {
+        printf("Seat not found for this ticket!\n");
+        return 0;
+    }
+    seat.status = SEAT_GOOD;
+    if (!Seat_Srv_Modify(&seat)) {
+        printf("Failed to update seat status!\n");
+        return 0;
+    }
+
+    sale_list_t list;
+    List_Init(list, sale_node_t);
+    Sale_Srv_FetchAll(list);
+    sale_node_t* pos;
+    int deleted = 0;
+    List_ForEach(list, pos) {
+        if (pos->data.ticket_id == ticketID) {
+            if (Sale_Srv_DeleteByID(pos->data.id)) {
+                deleted = 1;
+            }
+            break;
+        }
+    }
+    List_Destroy(list, sale_node_t);
+    if (!deleted) {
+        printf("Warning: no sale record found for TicketID=%d\n", ticketID);
+    }
+
+    printf("Return success! TicketID=%d SeatID=%d\n", ticket.id, ticket.seat_id);
+    return 1;
+}
+
+void Sale_UI_QuerySale(void) {
+    printf("\n================ Query Sale ================\n");
+    sale_list_t list;
+    List_Init(list, sale_node_t);
+    int count = Sale_Srv_FetchAll(list);
+    printf("Total: %d sales\n", count);
+    sale_node_t* pos;
+    List_ForEach(list, pos) {
+        printf("ID:%d TicketID:%d Price:%.2f\n", pos->data.id, pos->data.ticket_id, pos->data.price);
+    }
+    List_Destroy(list, sale_node_t);
 }
 
 void Sale_UI_MgtEntry(void) {
-    char choice[10] = {0};
-    int playID;
-
-    schedule_list_t head;
-    Pagination_t paging;
-
-    List_Init(head, schedule_node_t);
-    paging.offset = 0;
-    paging.pageSize = SALE_PAGE_SIZE;
-    paging.totalRecords = Schedule_Srv_FetchAll(head);
-    Paging_Locate_FirstPage(head, paging);
-
+    char choice[10];
     do {
-        printf("\n==================================================================\n");
-        printf("********************** Ticket Sale Management **********************\n");
-        printf("%5s  %15s  %15s  %15s\n", 
-               "ID", "Name", "Studio", "Start Date");
-        printf("------------------------------------------------------------------\n");
-
-        int i;
-        schedule_node_t *pos;
-        Paging_ViewPage_ForEach(head, paging, schedule_node_t, pos, i) {
-            printf("%5d  %15s  %15s  %04d-%02d-%02d\n",
-                   pos->data.id, pos->data.name, pos->data.studio,
-                   pos->data.startdate.year, pos->data.startdate.month, pos->data.startdate.day);
-        }
-
-        printf("------------------------------------------------------------------\n");
-        printf("Total:%2d  |  Page %2d/%2d\n",
-               paging.totalRecords, Pageing_CurPage(paging), Pageing_TotalPages(paging));
-        printf("==================================================================\n");
-        printf("[C]hoose Play | [P]rev | [N]ext | [T]ickets | [R]efund | [E]xit\n");
-        readString(choice, sizeof(choice), "Your Choice:");
-
+        printf("\n================ Sale Management ================\n");
+        printf("[S]ell Ticket\n");
+        printf("[R]eturn Ticket\n");
+        printf("[Q]uery Sale\n");
+        printf("[E]xit\n");
+        readString(choice, sizeof(choice), "Please input your choice: ");
         switch (choice[0]) {
-        case 'c':
-        case 'C':
-            playID = readInt("Input play ID:");
-            if (playID > 0) {
-                Sale_UI_ShowScheduler(playID);
-                paging.totalRecords = Schedule_Srv_FetchAll(head);
-                List_Paging(head, paging, schedule_node_t);
-            }
-            break;
-        case 'p':
-        case 'P':
-            if (!Pageing_IsFirstPage(paging))
-                Paging_Locate_OffsetPage(head, paging, -1, schedule_node_t);
-            break;
-        case 'n':
-        case 'N':
-            if (!Pageing_IsLastPage(paging))
-                Paging_Locate_OffsetPage(head, paging, 1, schedule_node_t);
-            break;
-        case 't':
-        case 'T': {
-            int scheduleID = readInt("Input schedule ID:");
-            if (scheduleID > 0) {
-                Sale_UI_ShowTicket(scheduleID);
-            }
-            break;
+        case 'S': case 's': Sale_UI_SellTicket(); break;
+        case 'R': case 'r': Sale_UI_ReturnTicket(); break;
+        case 'Q': case 'q': Sale_UI_QuerySale(); break;
         }
-        case 'r':
-        case 'R':
-            Sale_UI_RetfundTicket();
-            break;
-        }
-    } while (choice[0] != 'e' && choice[0] != 'E');
-
-    List_Destroy(head, schedule_node_t);
-}
-
-void Sale_UI_ShowScheduler(int playID) {
-    if (playID <= 0) return;
-
-    char choice[10] = {0};
-    int scheduleID;
-
-    schedule_list_t head;
-    Pagination_t paging;
-
-    List_Init(head, schedule_node_t);
-    paging.offset = 0;
-    paging.pageSize = SALE_PAGE_SIZE;
-    paging.totalRecords = Schedule_Srv_FetchByPlay(head, playID);
-    Paging_Locate_FirstPage(head, paging);
-
-    do {
-        printf("\n==================================================================\n");
-        printf("********************** Schedule List **********************\n");
-        printf("%5s  %15s  %15s  %15s\n", 
-               "ID", "Name", "Studio", "Start Date");
-        printf("------------------------------------------------------------------\n");
-
-        int i;
-        schedule_node_t *pos;
-        Paging_ViewPage_ForEach(head, paging, schedule_node_t, pos, i) {
-            printf("%5d  %15s  %15s  %04d-%02d-%02d\n",
-                   pos->data.id, pos->data.name, pos->data.studio,
-                   pos->data.startdate.year, pos->data.startdate.month, pos->data.startdate.day);
-        }
-
-        printf("------------------------------------------------------------------\n");
-        printf("Total:%2d  |  Page %2d/%2d\n",
-               paging.totalRecords, Pageing_CurPage(paging), Pageing_TotalPages(paging));
-        printf("==================================================================\n");
-        printf("[S]ell Ticket | [P]rev | [N]ext | [R]eturn\n");
-        readString(choice, sizeof(choice), "Your Choice:");
-
-        switch (choice[0]) {
-        case 's':
-        case 'S':
-            scheduleID = readInt("Input schedule ID:");
-            if (scheduleID > 0) {
-                Sale_UI_SellTicket(scheduleID);
-            }
-            break;
-        case 'p':
-        case 'P':
-            if (!Pageing_IsFirstPage(paging))
-                Paging_Locate_OffsetPage(head, paging, -1, schedule_node_t);
-            break;
-        case 'n':
-        case 'N':
-            if (!Pageing_IsLastPage(paging))
-                Paging_Locate_OffsetPage(head, paging, 1, schedule_node_t);
-            break;
-        }
-    } while (choice[0] != 'r' && choice[0] != 'R');
-
-    List_Destroy(head, schedule_node_t);
-}
-
-void Sale_UI_ShowTicket(int scheduleID) {
-    if (scheduleID <= 0) return;
-
-    ticket_list_t head;
-    Pagination_t paging;
-
-    List_Init(head, ticket_node_t);
-    paging.offset = 0;
-    paging.pageSize = SALE_PAGE_SIZE;
-    paging.totalRecords = Ticket_Srv_FetchBySchID(scheduleID, head);
-    Paging_Locate_FirstPage(head, paging);
-
-    printf("\n==================================================================\n");
-    printf("********************** Ticket List **********************\n");
-    printf("%5s  %12s  %10s  %10s  %10s\n", 
-           "ID", "Schedule ID", "Seat ID", "Price", "Status");
-    printf("------------------------------------------------------------------\n");
-
-    int i;
-    ticket_node_t *pos;
-    Paging_ViewPage_ForEach(head, paging, ticket_node_t, pos, i) {
-        char statusStr[16] = {0};
-        Sale_UI_Status2Str(pos->data.status, statusStr);
-        printf("%5d  %12d  %10d  %10d  %10s\n",
-               pos->data.id, pos->data.schedule_id,
-               pos->data.seat_id, pos->data.price, statusStr);
-    }
-
-    printf("------------------------------------------------------------------\n");
-    printf("Total:%2d  |  Page %2d/%2d\n",
-           paging.totalRecords, Pageing_CurPage(paging), Pageing_TotalPages(paging));
-    printf("==================================================================\n");
-
-    List_Destroy(head, ticket_node_t);
-
-    char temp[10] = {0};
-    readString(temp, sizeof(temp), "Press Enter to return...");
-}
-
-int Sale_UI_SellTicket(int scheduleID) {
-    if (scheduleID <= 0) return 0;
-
-    int rtn = 0;
-    int seatID;
-    char choice[10] = {0};
-
-    ticket_list_t ticketList;
-    List_Init(ticketList, ticket_node_t);
-    Ticket_Srv_FetchBySchID(scheduleID, ticketList);
-
-    do {
-        printf("\n==================================================================\n");
-        printf("********************** Sell Ticket **********************\n");
-        printf("Schedule ID: %d\n", scheduleID);
-        printf("------------------------------------------------------------------\n");
-
-        int i;
-        ticket_node_t *pos;
-        int availableCount = 0;
-        
-        printf("Available Tickets:\n");
-        printf("%5s  %10s  %10s\n", "ID", "Seat ID", "Price");
-        printf("------------------------------------------------------------------\n");
-        
-        List_ForEach(ticketList, pos) {
-            if (pos && pos->data.status == TICKET_AVL) {
-                printf("%5d  %10d  %10d\n",
-                       pos->data.id, pos->data.seat_id, pos->data.price);
-                availableCount++;
-            }
-        }
-        
-        if (availableCount == 0) {
-            printf("No available tickets!\n");
-            break;
-        }
-        
-        printf("------------------------------------------------------------------\n");
-        printf("Available: %d tickets\n", availableCount);
-
-        seatID = readInt("Input seat ID to buy (0 to cancel):");
-        if (seatID <= 0) {
-            printf("Sale cancelled.\n");
-            break;
-        }
-
-        ticket_node_t *ticketNode = Ticket_Srv_FetchBySeatID(ticketList, seatID);
-        if (!ticketNode) {
-            printf("Ticket not found for seat ID %d!\n", seatID);
-            continue;
-        }
-
-        if (ticketNode->data.status != TICKET_AVL) {
-            printf("This ticket is not available!\n");
-            continue;
-        }
-
-        printf("Confirm to buy ticket for seat %d at price %d? (Y/N):", seatID, ticketNode->data.price);
-        readString(choice, sizeof(choice), "");
-        
-        if (choice[0] == 'y' || choice[0] == 'Y') {
-            ticketNode->data.status = TICKET_SOLD;
-            if (Ticket_Srv_Modify(&ticketNode->data)) {
-                sale_t sale;
-                memset(&sale, 0, sizeof(sale_t));
-                sale.ticket_id = ticketNode->data.id;
-                sale.price = (float)ticketNode->data.price;
-                Sale_UI_GetCurrentTime(sale.sale_time, sizeof(sale.sale_time));
-                
-                if (Sale_Srv_Add(&sale)) {
-                    printf("Ticket sold successfully! Sale ID: %d\n", sale.id);
-                    rtn = 1;
-                } else {
-                    ticketNode->data.status = TICKET_AVL;
-                    Ticket_Srv_Modify(&ticketNode->data);
-                    printf("Failed to create sale record!\n");
-                }
-            } else {
-                printf("Failed to update ticket status!\n");
-            }
-        } else {
-            printf("Sale cancelled.\n");
-        }
-
-        readString(choice, sizeof(choice), "Sell another ticket? (Y/N):");
-    } while (choice[0] == 'y' || choice[0] == 'Y');
-
-    List_Destroy(ticketList, ticket_node_t);
-    return rtn;
-}
-
-int Sale_UI_RetfundTicket(void) {
-    int rtn = 0;
-    int ticketID;
-    char choice[10] = {0};
-
-    printf("\n==================================================================\n");
-    printf("********************** Refund Ticket **********************\n");
-
-    ticketID = readInt("Input ticket ID to refund:");
-    if (ticketID <= 0) {
-        printf("Invalid ticket ID!\n");
-        char temp[10] = {0};
-        readString(temp, sizeof(temp), "Press Enter to return...");
-        return 0;
-    }
-
-    ticket_node_t* ticketNode = Ticket_Srv_FetchByID(ticketID);
-    if (!ticketNode) {
-        printf("Ticket not found!\n");
-        char temp[10] = {0};
-        readString(temp, sizeof(temp), "Press Enter to return...");
-        return 0;
-    }
-    
-    ticket_t ticket = ticketNode->data;
-
-    if (ticket.status != TICKET_SOLD) {
-        char statusStr[16] = {0};
-        Sale_UI_Status2Str(ticket.status, statusStr);
-        printf("This ticket cannot be refunded! Current status: %s\n", statusStr);
-        char temp[10] = {0};
-        readString(temp, sizeof(temp), "Press Enter to return...");
-        return 0;
-    }
-
-    printf("\n==================================================================\n");
-    printf("Ticket Information:\n");
-    printf("------------------------------------------------------------------\n");
-    printf("Ticket ID:    %d\n", ticket.id);
-    printf("Schedule ID:  %d\n", ticket.schedule_id);
-    printf("Seat ID:      %d\n", ticket.seat_id);
-    printf("Price:        %d\n", ticket.price);
-    printf("------------------------------------------------------------------\n");
-    printf("Refund Amount: %d\n", ticket.price);
-    printf("==================================================================\n");
-    printf("Confirm to refund this ticket? (Y/N):");
-    
-    readString(choice, sizeof(choice), "");
-    
-    if (choice[0] == 'y' || choice[0] == 'Y') {
-        ticket.status = TICKET_RETURNED;
-        
-        if (Ticket_Srv_Modify(&ticket)) {
-            sale_t refundRecord;
-            memset(&refundRecord, 0, sizeof(sale_t));
-            refundRecord.ticket_id = ticket.id;
-            refundRecord.price = -(float)ticket.price;
-            Sale_UI_GetCurrentTime(refundRecord.sale_time, sizeof(refundRecord.sale_time));
-            
-            if (Sale_Srv_Add(&refundRecord)) {
-                printf("\n==================================================================\n");
-                printf("Refund successful!\n");
-                printf("Refund Record ID: %d\n", refundRecord.id);
-                printf("Refund Amount: %d\n", ticket.price);
-                printf("==================================================================\n");
-                rtn = 1;
-            } else {
-                ticket.status = TICKET_SOLD;
-                Ticket_Srv_Modify(&ticket);
-                printf("Failed to create refund record! Ticket status restored.\n");
-            }
-        } else {
-            printf("Failed to update ticket status!\n");
-        }
-    } else {
-        printf("Refund cancelled.\n");
-    }
-
-    char temp[10] = {0};
-    readString(temp, sizeof(temp), "Press Enter to return...");
-    return rtn;
+    } while (choice[0] != 'E' && choice[0] != 'e');
 }

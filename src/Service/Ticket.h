@@ -1,77 +1,95 @@
-#ifndef TICKET_H
-#define TICKET_H
+/*
+* Copyright(C), 2007-2008, XUPT Univ.
+* File name: Ticket.h
+* Description: Ticket service header file
+* Author:   XUPT
+* Version:  v.1
+* Date:     2015/04/22
+*/
 
+#ifndef TICKET_H_
+#define TICKET_H_
+
+#include "../Common/common.h"
 #include "../Common/List.h"
+#include "Seat.h"
 
-// 票务状态枚举（和你 Sale_UI.c 完全一致）
 typedef enum {
-    TICKET_AVL = 1,      // 未售/可用
-    TICKET_SOLD,         // 已售
-    TICKET_RETURNED,     // 已退
-    TICKET_RESV          // 预留
+    TICKET_AVL = 0,
+    TICKET_SOLD = 1,
+    TICKET_RESV = 9
 } ticket_status_t;
 
-// 票务实体
 typedef struct {
-    int id;             // 票ID
-    int schedule_id;    // 关联演出计划ID
-    int seat_id;        // 关联座位ID
-    int price;          // 票价
-    int status;         // 票务状态
+    int id;
+    int schedule_id;
+    int seat_id;
+    float price;
+    ticket_status_t status;
+    user_time_t time;
+    user_date_t date;
 } ticket_t;
 
-// 链表节点
 typedef struct ticket_node {
     ticket_t data;
-    struct ticket_node* next;
-    struct ticket_node* prev;
-} ticket_node_t;
+    struct ticket_node *next;
+    struct ticket_node *prev;
+} ticket_node_t, *ticket_list_t;
 
-// 链表头指针
-typedef ticket_node_t* ticket_list_t;
+// Identifier: TTMS_SCU_Ticket_Srv_Add
+// Function: Add a new ticket
+int Ticket_Srv_Add(ticket_t* data);
 
-// 错误码定义
-#define TICK_SUCCESS        0
-#define TICK_INIT_ERR       1
-#define TICK_CODE_ERR       2
-#define TICK_LIST_EMPTY     3
-#define TICK_NO_EXIST       4
-#define TICK_PARAM_ERR      5  // 新增：参数错误
-
-// 初始化票务链表
-int Ticket_List_Init(ticket_list_t list);
-
-// 初始化单个票务节点
-int Ticket_Srv_Init(ticket_list_t head, int schedule_id, int seat_id, int price);
-
-// 批量添加票务
-int Ticket_Srv_Batch_Add(ticket_list_t head, int schedule_id, int price);
-
-// 批量删除过期票务
-int Ticket_Srv_Batch_Delete(ticket_list_t head);
-
-// 检查座位对应票务状态
-int Ticket_Srv_Check_Status(ticket_list_t head, int schedule_id, int seat_id);
-
-// 修改票务状态
-int Ticket_Srv_Mov_Status(ticket_list_t head, int schedule_id, int seat_id, int status);
-
-// 根据场次ID批量删除票务
-int Ticket_Srv_DeleteByScheduleID(ticket_list_t head, int schedule_id);
-
-// ------------------- 【关键】完全匹配你 Sale_UI.c 调用参数的函数声明 -------------------
-// 1. Ticket_Srv_FetchByID：调用时只传 1 个 int 参数
-ticket_node_t* Ticket_Srv_FetchByID(int ticket_id);
-
-// 2. Ticket_Srv_FetchBySeatID：调用时传 2 个参数 (ticket_list_t, int seat_id)
-ticket_node_t* Ticket_Srv_FetchBySeatID(ticket_list_t head, int seat_id);
-
-// 3. Ticket_Srv_Modify：调用时只传 1 个 ticket_t* 参数
+// Identifier: TTMS_SCU_Ticket_Srv_Modify
+// Function: Modify an existing ticket
 int Ticket_Srv_Modify(const ticket_t* data);
 
-// 4. 别名：解决 Ticket_Srv_FetchBySchID 未定义报错（和 Ticket_Srv_DeleteByScheduleID 复用）
-#define Ticket_Srv_FetchBySchID Ticket_Srv_FetchByScheduleID
-ticket_node_t* Ticket_Srv_FetchByScheduleID(ticket_list_t head, int schedule_id);
-// -----------------------------------------------------------------------------------
+// Identifier: TTMS_SCU_Ticket_Srv_DeleteByID
+// Function: Delete a ticket by ID
+int Ticket_Srv_DeleteByID(int ID);
 
-#endif // TICKET_H
+// Identifier: TTMS_SCU_Ticket_Srv_FetchByID
+// Function: Fetch a ticket by ID
+int Ticket_Srv_FetchByID(int ID, ticket_t* buf);
+
+// Identifier: TTMS_SCU_Ticket_Srv_FetchBySchID
+// Function: Fetch tickets by schedule ID
+int Ticket_Srv_FetchBySchID(int id, ticket_list_t list);
+
+// Identifier: TTMS_SCU_Ticket_Srv_FetchAll
+// Function: Fetch all tickets into a list
+int Ticket_Srv_FetchAll(ticket_list_t list);
+
+// Identifier: TTMS_SCU_Ticket_Srv_FindByID
+// Function: Find ticket node by ID in list
+ticket_node_t* Ticket_Srv_FindByID(ticket_list_t list, int ticketID);
+
+// Identifier: TTMS_SCU_Ticket_Srv_SelBySchID
+// Function: Select tickets by schedule ID
+int Ticket_Srv_SelBySchID(int id, ticket_list_t list);
+
+// Identifier: TTMS_SCU_Ticket_Srv_Update
+// Function: Update ticket status
+int Ticket_Srv_Update(const ticket_t* data);
+
+// Identifier: TTMS_SCU_Ticket_Perst_SelectBySchID
+// Function: Select tickets by schedule ID from persistence
+int Ticket_Perst_SelectBySchID(int id, ticket_list_t list);
+
+// Identifier: TTMS_SCU_Ticket_Perst_SelectAll
+// Function: Select all tickets from persistence
+int Ticket_Perst_SelectAll(ticket_list_t list);
+
+// Identifier: TTMS_SCU_Ticket_Perst_Insert
+// Function: Insert ticket into persistence
+int Ticket_Perst_Insert(ticket_t* data);
+
+// Identifier: TTMS_SCU_Ticket_Perst_Update
+// Function: Update ticket in persistence
+int Ticket_Perst_Update(const ticket_t* data);
+
+// Identifier: TTMS_SCU_Ticket_Perst_DeleteByID
+// Function: Delete ticket from persistence by ID
+int Ticket_Perst_DeleteByID(int ID);
+
+#endif

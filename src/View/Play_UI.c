@@ -1,6 +1,4 @@
-﻿#define _CRT_SECURE_NO_WARNINGS
-
-
+#define _CRT_SECURE_NO_WARNINGS
 #include "Play_UI.h"
 #include <stdio.h>
 #include <string.h>
@@ -8,7 +6,6 @@
 
 #define PLAY_PAGE_SIZE 5
 
-// 辅助：枚举转字符串
 static void Play_UI_Type2Str(play_type_t type, char* buf) {
     switch (type) {
     case PLAY_TYPE_FILM:    strcpy(buf, "Film"); break;
@@ -27,7 +24,6 @@ static void Play_UI_Rate2Str(play_rating_t rate, char* buf) {
     }
 }
 
-// 管理剧目主界面
 void Play_UI_MgtEntry(void) {
     int i, id;
     char choice[10] = { 0 };
@@ -36,7 +32,6 @@ void Play_UI_MgtEntry(void) {
     play_node_t* pos;
     Pagination_t paging;
 
-    // 初始化链表（传2个参数）
     List_Init(head, play_node_t);
     paging.offset = 0;
     paging.pageSize = PLAY_PAGE_SIZE;
@@ -104,14 +99,11 @@ void Play_UI_MgtEntry(void) {
         }
     } while (choice[0] != 'r' && choice[0] != 'R');
 
-    // ✅ 修正：传2个参数
     List_Destroy(head, play_node_t);
 }
 
-// 添加新剧目
 int Play_UI_Add(void) {
     play_t rec;
-    // ✅ 关键：初始化清0，避免调试模式下的 0xCCCCCCCC
     memset(&rec, 0, sizeof(play_t));
     int cnt = 0;
     char choice[10] = { 0 };
@@ -135,7 +127,7 @@ int Play_UI_Add(void) {
 
         if (Play_Srv_Add(&rec)) {
             cnt++;
-            printf("Add success! New Play ID: %d\n", rec.id); // ✅ 打印确认ID
+            printf("Add success! New Play ID: %d\n", rec.id);
         }
         else {
             printf("Add failed!\n");
@@ -145,7 +137,6 @@ int Play_UI_Add(void) {
     return cnt;
 }
 
-// 修改剧目
 int Play_UI_Modify(int id) {
     play_t rec;
     int rtn = 0;
@@ -185,7 +176,6 @@ int Play_UI_Modify(int id) {
     return rtn;
 }
 
-// 删除剧目
 int Play_UI_Delete(int id) {
     int rtn = 0;
     char temp[10] = { 0 };
@@ -201,7 +191,6 @@ int Play_UI_Delete(int id) {
     return rtn;
 }
 
-// 查询剧目
 void Play_UI_Query(play_list_t list) {
     char key[31] = { 0 };
     readString(key, sizeof(key), "Input play name to search:");

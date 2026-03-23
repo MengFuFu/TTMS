@@ -1,4 +1,5 @@
-﻿#include "../Persistence/Play_Persist.h"
+#define _CRT_SECURE_NO_WARNINGS
+#include "../Persistence/Play_Persist.h"
 #include "../Common/List.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,7 +7,6 @@
 
 #define PLAY_DATA_FILE "play.dat"
 
-// 载入全部剧目（对应PPT：TTMS_SCU_Play_Perst_SelAll）
 int Play_Perst_SelAll(play_list_t list) {
     if (!list) return 0;
 
@@ -20,7 +20,6 @@ int Play_Perst_SelAll(play_list_t list) {
     while (fread(&data, sizeof(play_t), 1, fp) == 1) {
         newNode = (play_node_t*)malloc(sizeof(play_node_t));
         if (newNode) {
-            // ✅ 清0堆内存，避免调试值泄露
             memset(newNode, 0, sizeof(play_node_t));
             newNode->data = data;
             newNode->next = newNode->prev = newNode;
@@ -32,7 +31,6 @@ int Play_Perst_SelAll(play_list_t list) {
     return count;
 }
 
-// 插入新剧目
 int Play_Perst_Insert(play_t* data) {
     if (!data) return 0;
 
@@ -43,7 +41,6 @@ int Play_Perst_Insert(play_t* data) {
     return rtn;
 }
 
-// 更新剧目
 int Play_Perst_Update(play_t* data) {
     if (!data) return 0;
 
@@ -64,7 +61,6 @@ int Play_Perst_Update(play_t* data) {
     return found;
 }
 
-// 根据ID删除剧目
 int Play_Perst_DeleteByID(int id) {
     FILE* fp = fopen(PLAY_DATA_FILE, "rb");
     FILE* tmp = fopen("play_tmp.dat", "wb");

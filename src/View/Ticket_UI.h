@@ -3,13 +3,8 @@
 
 #include "../Service/Ticket.h"
 
-// 票管理主菜单
-void Ticket_UI_Main();
-
-// 生成演出票
-void Ticket_UI_GenTicket();
-
-// 重新生成演出票
-void Ticket_UI_ReGenTicket();
+void Ticket_UI_Main(void);
+void Ticket_UI_GenTicket(void);
+void Ticket_UI_ReGenTicket(void);
 
 #endif

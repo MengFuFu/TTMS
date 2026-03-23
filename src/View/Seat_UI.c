@@ -1,12 +1,3 @@
-/*
-* Copyright(C), 2007-2008, XUPT Univ.
-* 用例编号：TTMS_UC_02
-* File name: Seat_UI.c
-* Description : 设置座位用例界面层
-* Author:   XUPT
-* Version:  v.1
-* Date: 	2015年4月22日
-*/
 #define _CRT_SECURE_NO_WARNINGS
 #include "Seat_UI.h"
 #include "../Service/Seat.h"
@@ -17,27 +8,15 @@
 #include <string.h>
 #include <assert.h>
 
-/*
-表识符：TTMS_SCU_Seat_UI_S2C
-函数功能：根据座位状态获取界面显示符号。
-参数说明：status为seat_status_t类型，表示座位状态。
-返 回 值：字符型，表示座位的界面显示符号。
-*/
 char Seat_UI_Status2Char(seat_status_t status) {
     switch (status) {
-    case SEAT_GOOD:    return '#';  // 好座位
-    case SEAT_BROKEN:  return 'x';  // 坏座位
-    case SEAT_NONE:    return ' ';  // 无座位
+    case SEAT_GOOD:    return '#';
+    case SEAT_BROKEN:  return 'x';
+    case SEAT_NONE:    return ' ';
     default:           return '?';
     }
 }
 
-/*
-标识符：TTMS_SCU_Seat_UI_C2S
-函数功能：根据输入符号获取座位状态。
-参数说明：statusChar为字符型，表示设置座位的输入符号。
-返 回 值：seat_status_t类型，表示座位的状态。
-*/
 seat_status_t Seat_UI_Char2Status(char statusChar) {
     switch (statusChar) {
     case '#': return SEAT_GOOD;
@@ -47,24 +26,21 @@ seat_status_t Seat_UI_Char2Status(char statusChar) {
     }
 }
 
-// 辅助：打印座位矩阵
 static void Seat_UI_PrintMatrix(seat_list_t list, int rows, int cols) {
     int r, c;
     seat_node_t* pos;
 
     printf("\n==================== Seat Matrix ====================\n");
     printf("   ");
-    for (c = 1; c <= cols; c++) printf("%2d", c); // 列号
+    for (c = 1; c <= cols; c++) printf("%2d", c);
     printf("\n");
 
     for (r = 1; r <= rows; r++) {
-        printf("%2d ", r); // 行号
+        printf("%2d ", r);
         for (c = 1; c <= cols; c++) {
-            // 查找对应座位
             char statusChar = ' ';
             List_ForEach(list, pos) {
-                if (pos->data.roomID == pos->data.roomID &&
-                    pos->data.row == r && pos->data.column == c) {
+                if (pos->data.row == r && pos->data.column == c) {
                     statusChar = Seat_UI_Status2Char(pos->data.status);
                     break;
                 }
@@ -77,18 +53,11 @@ static void Seat_UI_PrintMatrix(seat_list_t list, int rows, int cols) {
     printf("Status: #=Good | x=Broken |  =None\n");
 }
 
-/*
-标识符：TTMS_SCU_Seat_UI_MgtEnt
-函数功能：界面层管理座位的入口函数，显示当前的座位数据，并提供座位数据添加、修改、删除功能操作的入口。
-参数说明：roomID为整型，是需要设置座位的演出厅ID。
-返 回 值：无。
-*/
 void Seat_UI_MgtEntry(int roomID) {
     char choice[10] = { 0 };
     int row, col;
     studio_t studio;
 
-    // 获取演出厅信息（行数、列数）
     if (!Studio_Srv_FetchByID(roomID, &studio)) {
         printf("Studio not found!\nPress Enter to return...");
         char temp[10] = { 0 };
@@ -150,13 +119,6 @@ void Seat_UI_MgtEntry(int roomID) {
     List_Destroy(seatList, seat_node_t);
 }
 
-/*
-识符：TTMS_SCU_Seat_UI_Add
-函数功能：用于添加一个新的座位数据。
-参数说明：第一个参数list为seat_list_t类型指针，指向座位链表头指针，
-         第二个参数rowsCount为整型，表示座位所在行号，第三个参数colsCount为整型，表示座位所在列号。
-返 回 值：整型，表示是否成功添加了座位的标志。
-*/
 int Seat_UI_Add(seat_list_t list, int roomID, int row, int column) {
     seat_t rec;
     memset(&rec, 0, sizeof(seat_t));
@@ -173,17 +135,10 @@ int Seat_UI_Add(seat_list_t list, int roomID, int row, int column) {
     return Seat_Srv_Add(&rec);
 }
 
-/*
-标识符：TTMS_SCU_Seat_UI_Mod
-函数功能：用于修改一个座位数据。
-参数说明：第一个参数list为seat_list_t类型指针，指向座位链表头指针，第二个参数rowsCount为整型，表示座位所在行号，第三个参数colsCount为整型，表示座位所在列号。
-返 回 值：整型，表示是否成功修改了座位的标志。
-*/
 int Seat_UI_Modify(seat_list_t list, int row, int column) {
     seat_node_t* pos;
     char statusChar[10] = { 0 };
 
-    // 查找对应座位
     List_ForEach(list, pos) {
         if (pos->data.row == row && pos->data.column == column) {
             printf("Current Status: %c\n", Seat_UI_Status2Char(pos->data.status));
@@ -198,16 +153,9 @@ int Seat_UI_Modify(seat_list_t list, int row, int column) {
     return 0;
 }
 
-/*
-标识符：TTMS_SCU_Seat_UI_Del
-函数功能：用于删除一个座位的数据。
-参数说明：第一个参数list为seat_list_t类型指针，指向座位链表头指针，第二个参数rowsCount为整型，表示座位所在行号，第三个参数colsCount为整型，表示座位所在列号。
-返 回 值：整型，表示是否成功删除了座位的标志。
-*/
 int Seat_UI_Delete(seat_list_t list, int row, int column) {
     seat_node_t* pos;
 
-    // 查找对应座位
     List_ForEach(list, pos) {
         if (pos->data.row == row && pos->data.column == column) {
             return Seat_Srv_DeleteByID(pos->data.id);

@@ -1,197 +1,136 @@
+/*
+* Copyright(C), 2007-2008, XUPT Univ.
+* File name: Ticket.c
+* Description: Ticket service implementation
+* Author:   XUPT
+* Version:  v.1
+* Date:     2015/04/22
+*/
+
+#define _CRT_SECURE_NO_WARNINGS
 #include "Ticket.h"
 #include "../Persistence/Ticket_Persist.h"
+#include "Seat.h"
+#include "../Persistence/Seat_Persist.h"
 #include <stdlib.h>
-#include <assert.h>
 #include <string.h>
+#include <stdio.h>
 
-// 全局票务链表（适配�?head 参数的调用）
-ticket_list_t ticket_list = NULL;
+// Identifier: TTMS_SCU_Ticket_Srv_Add
+// Function: Add a new ticket record
+// Input: data - ticket data to add
+// Return: 1 on success, 0 on failure
+int Ticket_Srv_Add(ticket_t* data) {
+    if (!data) return 0;
 
-// 初始化票务链�?
-int Ticket_List_Init(ticket_list_t list) {
-	return Ticket_Perst_SelectAll(list);
+    ticket_list_t tempList;
+    List_Init(tempList, ticket_node_t);
+    Ticket_Perst_SelectAll(tempList);
+
+    int maxID = 0;
+    ticket_node_t* pos;
+    List_ForEach(tempList, pos) {
+        if (pos && pos->data.id > maxID && pos->data.id != 0xCCCCCCCC) {
+            maxID = pos->data.id;
+        }
+    }
+    data->id = maxID + 1;
+
+    List_Destroy(tempList, ticket_node_t);
+    return Ticket_Perst_Insert(data);
 }
 
-// 初始化一个新节点，并且直接写入文�?
-int Ticket_Srv_Init(ticket_list_t head, int schedule_id, int seat_id, int price) {
-	ticket_node_t* newnode = (ticket_node_t*)malloc(sizeof(ticket_node_t));
-	if (newnode == NULL) {
-		return TICK_INIT_ERR;
-	}
-	newnode->data.price = price;
-	newnode->data.schedule_id = schedule_id;
-	newnode->data.seat_id = seat_id;
-	newnode->data.status = TICKET_AVL; // 默认未售/可用
-
-	int insert_ret = Ticket_Perst_Insert(&(newnode->data));
-	if (insert_ret == 0) {
-		free(newnode);
-		return TICK_CODE_ERR;
-	}
-	newnode->data.id = insert_ret;
-	List_AddTail(head, newnode);
-	return TICK_SUCCESS;
-}
-
-int Ticket_Srv_Batch_Add(ticket_list_t head, int schedule_id, int price) {
-	//int studio_id = func(schedule_id);//TODO获取剧院id
-	//int studio_num = func(studio_id);//TODO获取剧院大小
-	int seat_begin_id, seat_end_id;
-	//int ret = func(&seat_begin_id, &seat_end_id); 
-	////TODO:循环
-	//for (int i = seat_begin_id; i <=   seat_end_id; i++) {
-	//	if (func(studio_id/*, 座位id*/)) {
-	//		//剧院对应座位上都创建该票
-
-	//		int init_ret = Ticket_Srv_Init(head, schedule_id, i, price);
-	//		if (init_ret != 0) {
-	//			return init_ret;
-	//		}
-	//	}
-	//}
-	return TICK_SUCCESS;
-}
-
-int Ticket_Srv_Batch_Delete(ticket_list_t head) {
-	//assert(head != NULL); 
-
-	//if (List_IsEmpty(head)) {
-	//	return TICK_LIST_EMPTY;
-	//}
-
-	//ticket_node_t* cur, * tmp;
-	//int count = 0;
-
-	//cur = head->next;
-	//while (cur != head) {
-	//	tmp = cur->next;
-
-	//	// func = 判断场次是否已过�?
-	//	if (func(cur->data.schedule_id)) {
-	//		// 删文�?
-	//		Ticket_Perst_DeleteByID(cur->data.id);
-	//		// 删内�?
-	//		List_FreeNode(cur);
-	//		count++;
-	//	}
-
-	//	cur = tmp;
-	//}
-
-	//return count;
-}
-
-//查座位对应票�?
-int Ticket_Srv_Check_Status(ticket_list_t head, int schedule_id, int seat_id) {
-	if (List_IsEmpty(head)) {
-		return TICK_LIST_EMPTY;
-	}
-	ticket_node_t* cur;
-	List_ForEach(head, cur) {
-		if (cur->data.schedule_id == schedule_id && cur->data.seat_id == seat_id) {
-			break;
-		}
-	}
-	if (cur == NULL) {
-		return TICK_NO_EXIST;
-	}
-	return cur->data.status;
-}
-
-//�?
-int Ticket_Srv_Mov_Status(ticket_list_t head, int schedule_id, int seat_id, int status) {
-	if (List_IsEmpty(head)) {
-		return TICK_LIST_EMPTY;
-	}
-	ticket_node_t* cur;
-	List_ForEach(head, cur) {
-		if (cur->data.schedule_id == schedule_id && cur->data.seat_id == seat_id) {
-			break;
-		}
-	}
-	if (cur == NULL) {
-		return TICK_NO_EXIST;
-	}
-	cur->data.status = status;
-	Ticket_Perst_Update(&(cur->data));
-	return TICK_SUCCESS;
-}
-
-//通过场次删除
-int Ticket_Srv_DeleteByScheduleID(ticket_list_t head, int schedule_id) {
-	assert(head != NULL);
-
-	if (List_IsEmpty(head)) {
-		return TICK_LIST_EMPTY;
-	}
-
-	ticket_node_t* cur, * tmp;
-	int count = 0;
-
-	cur = head->next;
-	while (cur != head) {
-		tmp = cur->next;
-
-		if (cur->data.schedule_id == schedule_id) {
-			// 删文�?
-			Ticket_Perst_DeleteByID(cur->data.id);
-			// 删内�?
-			List_FreeNode(cur);
-			count++;
-		}
-
-		cur = tmp;
-	}
-
-	return count;
-}
-
-// ------------------- 【关键】适配�?Sale_UI.c 调用的函数实�?-------------------
-// 1. Ticket_Srv_FetchByID：仅�?ticket_id 查找（适配 1 个参数调用）
-ticket_node_t* Ticket_Srv_FetchByID(int ticket_id) {
-	if (!ticket_list) return NULL;
-
-	ticket_node_t* cur;
-	List_ForEach(ticket_list, cur) {
-		if (cur->data.id == ticket_id) return cur;
-	}
-	return NULL;
-}
-
-// 2. Ticket_Srv_FetchBySeatID：仅�?seat_id 查找（适配 2 个参数调用，忽略 schedule_id�?
-ticket_node_t* Ticket_Srv_FetchBySeatID(ticket_list_t head, int seat_id) {
-	if (List_IsEmpty(head)) return NULL;
-
-	ticket_node_t* cur;
-	List_ForEach(head, cur) {
-		if (cur->data.seat_id == seat_id) return cur;
-	}
-	return NULL;
-}
-
-// 3. Ticket_Srv_Modify：仅�?data->id 修改（适配 1 个参数调用，用全局链表�?
+// Identifier: TTMS_SCU_Ticket_Srv_Modify
+// Function: Update an existing ticket record
+// Input: data - ticket data to update
+// Return: 1 on success, 0 on failure
 int Ticket_Srv_Modify(const ticket_t* data) {
-	if (!data || !ticket_list) return TICK_PARAM_ERR;
-
-	ticket_node_t* cur;
-	List_ForEach(ticket_list, cur) {
-		if (cur->data.id == data->id) {
-			cur->data = *data;
-			Ticket_Perst_Update(&(cur->data));
-			return TICK_SUCCESS;
-		}
-	}
-	return TICK_NO_EXIST;
+    if (!data) return 0;
+    return Ticket_Perst_Update(data);
 }
 
-// 4. Ticket_Srv_FetchByScheduleID：按 schedule_id 查找（给别名用）
-ticket_node_t* Ticket_Srv_FetchByScheduleID(ticket_list_t head, int schedule_id) {
-	if (List_IsEmpty(head)) return NULL;
-
-	ticket_node_t* cur;
-	List_ForEach(head, cur) {
-		if (cur->data.schedule_id == schedule_id) return cur;
-	}
-	return NULL;
+// Identifier: TTMS_SCU_Ticket_Srv_DeleteByID
+// Function: Delete a ticket record by ID
+// Input: ID - ticket ID to delete
+// Return: 1 on success, 0 on failure
+int Ticket_Srv_DeleteByID(int ID) {
+    return Ticket_Perst_DeleteByID(ID);
 }
-// -----------------------------------------------------------------------------------
+
+// Identifier: TTMS_SCU_Ticket_Srv_FetchByID
+// Function: Fetch a ticket record by ID
+// Input: ID - ticket ID, buf - buffer to store result
+// Return: 1 on success, 0 on failure
+int Ticket_Srv_FetchByID(int ID, ticket_t* buf) {
+    if (!buf) return 0;
+    memset(buf, 0, sizeof(ticket_t));
+
+    ticket_list_t list;
+    List_Init(list, ticket_node_t);
+    Ticket_Perst_SelectAll(list);
+
+    int found = 0;
+    ticket_node_t* pos;
+    List_ForEach(list, pos) {
+        if (pos && pos->data.id == ID) {
+            *buf = pos->data;
+            found = 1;
+            break;
+        }
+    }
+
+    List_Destroy(list, ticket_node_t);
+    return found;
+}
+
+// Identifier: TTMS_SCU_Ticket_Srv_FetchBySchID
+// Function: Fetch tickets by schedule ID into a list
+// Input: id - schedule ID, list - ticket list head
+// Return: number of tickets fetched
+int Ticket_Srv_FetchBySchID(int id, ticket_list_t list) {
+    if (!list) return 0;
+    List_Free(list, ticket_node_t);
+    return Ticket_Perst_SelectBySchID(id, list);
+}
+
+// Identifier: TTMS_SCU_Ticket_Srv_FetchAll
+// Function: Fetch all ticket records into a list
+// Input: list - ticket list head pointer
+// Return: number of records fetched
+int Ticket_Srv_FetchAll(ticket_list_t list) {
+    if (!list) return 0;
+    List_Free(list, ticket_node_t);
+    return Ticket_Perst_SelectAll(list);
+}
+
+// Identifier: TTMS_SCU_Ticket_Srv_FindByID
+// Function: Find ticket node by ID in list
+// Input: list - ticket list head, ticketID - ticket ID
+// Return: pointer to found node, NULL if not found
+ticket_node_t* Ticket_Srv_FindByID(ticket_list_t list, int ticketID) {
+    if (!list) return NULL;
+
+    ticket_node_t* pos;
+    List_ForEach(list, pos) {
+        if (pos->data.id == ticketID) {
+            return pos;
+        }
+    }
+    return NULL;
+}
+
+// Identifier: TTMS_SCU_Ticket_Srv_SelBySchID
+// Function: Select tickets by schedule ID
+// Input: id - schedule ID, list - ticket list head
+// Return: number of tickets selected
+int Ticket_Srv_SelBySchID(int id, ticket_list_t list) {
+    return Ticket_Srv_FetchBySchID(id, list);
+}
+
+// Identifier: TTMS_SCU_Ticket_Srv_Update
+// Function: Update ticket record
+// Input: data - ticket data to update
+// Return: 1 on success, 0 on failure
+int Ticket_Srv_Update(const ticket_t* data) {
+    return Ticket_Srv_Modify(data);
+}
