@@ -8,6 +8,7 @@
 #include "../View/Schedule_UI.h"
 #include "../View/Ticket_UI.h"
 #include "../View/SalesAnalysis_UI.h"
+#include "../View/Query_UI.h"
 #include "../Service/Play.h"
 #include "../Common/List.h"
 #include "../SafeStdin/safe_stdin.h"
@@ -82,7 +83,7 @@ void Main_Menu(void) {
             break;
         case 'Q':
         case 'q':
-            printf("Query function - select play first.\n");
+            Query_UI_MgtEntry();
             break;
         case 'N':
         case 'n':
