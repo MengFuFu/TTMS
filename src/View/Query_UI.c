@@ -226,6 +226,7 @@ static void Query_UI_SaleInfo(void) {
 void Query_UI_MgtEntry(void) {
     char choice[10];
     do {
+        system("cls");
         printf("\n==================================================================\n");
         printf("************************  Query Management  ************************\n");
         printf("[P]lay Information\n");

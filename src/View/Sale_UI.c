@@ -169,7 +169,8 @@ void Sale_UI_QuerySale(void) {
 void Sale_UI_MgtEntry(void) {
     char choice[10];
     do {
-        printf("\n================ Sale Management ================\n");
+        system("cls");
+        printf("\n================ Sale Management ===============-\n");
         printf("[S]ell Ticket\n");
         printf("[R]eturn Ticket\n");
         printf("[Q]uery Sale\n");

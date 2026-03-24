@@ -118,9 +118,10 @@ void Seat_UI_MgtEntry(int roomID) {
     Seat_Srv_FetchByRoomID(seatList, roomID);
 
     do {
+        system("cls");
         Seat_UI_PrintMatrix(seatList, studio.rowsCount, studio.colsCount);
         printf("\n[A]dd Seat | [M]odify Seat | [D]elete Seat | [R]eturn\n");
-        readString(choice, sizeof(choice), "Your Choice:");
+        readString(choice, sizeof(choice), "Your Choice: ");
 
         switch (choice[0]) {
         case 'a': case 'A':

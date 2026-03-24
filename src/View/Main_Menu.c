@@ -16,6 +16,7 @@
 void Main_Menu(void) {
     char choice[10];
     do {
+        system("cls");
         printf("\n==================================================================\n");
         printf("**************** Theater Ticket Management System ****************\n");
         printf("[S]tudio Management.\n");

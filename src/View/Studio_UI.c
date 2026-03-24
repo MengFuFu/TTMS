@@ -34,6 +34,7 @@ void Studio_UI_MgtEntry(void) {
     Paging_Locate_FirstPage(head, paging);
 
     do {
+        system("cls");
         printf("\n====================================================================================================\n");
         printf("******************************  Projection Room List  ******************************\n");
         printf("%5s  %-24s  %12s  %12s  %12s\n",

@@ -47,6 +47,7 @@ void SalesAnalysis_UI_MgtEn() {
         }
         printf("\t\t\t-------------------Total:%2d--------------------Page %2d/%2d-------------------------------------------\n",
             paging.totalRecords, Pageing_CurPage(paging), Pageing_TotalPages(paging));
+        printf("\nOptions: [P]rev Page | [N]ext Page | [R]eturn\n");
         
         readString(choice, sizeof(choice), "Input choice: ");
         

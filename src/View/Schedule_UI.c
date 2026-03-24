@@ -31,6 +31,7 @@ void Schedule_UI_MgtEntry(int play_id)
     Paging_Locate_FirstPage(list, paging);
 
     do {
+        system("cls");
         printf("\n==========================================================================================================\n");
         printf("****************************************  Schedule List  ****************************************\n");
         printf("%5s  %-20s  %-15s  %-19s  %-19s\n", "ID", "Name", "Studio", "Start Time", "End Time");
