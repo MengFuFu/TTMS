@@ -12,6 +12,7 @@
 
 int SafeStdin(char* buf, int maxLen);
 int readInt(const char* prompt);
+float readFloat(const char* prompt);
 void readString(char* buffer, int size, const char* prompt);
 int StrToInt(int* num, char* input);
 int safeInputString(char* buffer, int size);

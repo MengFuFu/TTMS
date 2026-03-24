@@ -69,6 +69,31 @@ int readInt(const char* prompt) {
     }
 }
 
+float readFloat(const char* prompt) {
+    float num = 0.0f;
+    char input[100] = { 0 };
+    int ret;
+    char* end = NULL;
+
+    while (1) {
+        printf("%s", prompt);
+        ret = safeInputStringInternal(input, sizeof(input));
+        if (ret == SAFE_INPUT_EOF) {
+            printf("\nDetected end of input, program exiting.\n");
+            exit(EXIT_SUCCESS);
+        }
+        if (ret == SAFE_INPUT_SUCCESS) {
+            errno = 0;
+            num = strtof(input, &end);
+            if (end != input && errno == 0) {
+                return num;
+            } else {
+                printf("Input error! Please enter a valid number.\n");
+            }
+        }
+    }
+}
+
 void readString(char* buffer, int size, const char* prompt) {
     int ret;
 

@@ -34,7 +34,7 @@ long EntKey_Perst_GetNewKeys(const char entName[], int count) {
         return 0;
     }
 
-    if (access(ENTITY_KEY_FILE, 0)) {
+    if (_access(ENTITY_KEY_FILE, 0)) {
         fp = fopen(ENTITY_KEY_FILE, "wb+");
         if (NULL == fp) {
             return 0;
