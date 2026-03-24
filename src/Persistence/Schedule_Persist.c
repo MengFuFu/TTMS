@@ -3,6 +3,7 @@
 #include "Schedule_Persist.h"
 #include "../Service/Schedule.h"
 #include "../Service/Play.h"
+#include "EntityKey_Persist.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -11,6 +12,7 @@
 
 static const char SCHEDULE_DATA_FILE[] = "Schedule.dat";
 static const char SCHEDULE_DATA_TEMP_FILE[] = "ScheduleTmp.dat";
+static const char SCHEDULE_KEY_NAME[] = "Schedule";
 
 int Schedule_Perst_SelectByPlay(schedule_list_t list, int play_id)
 {
@@ -69,6 +71,13 @@ int Schedule_Perst_SelectByPlay(schedule_list_t list, int play_id)
 int Schedule_Perst_Insert(schedule_t* data)
 {
     assert(NULL!=data);
+
+    // 自动生成ID
+    long key = EntKey_Perst_GetNewKeys(SCHEDULE_KEY_NAME, 1);
+    if (key <= 0) {
+        return 0;
+    }
+    data->id = key;
 
     FILE *fp = fopen(SCHEDULE_DATA_FILE, "ab");
     int rtn = 0;

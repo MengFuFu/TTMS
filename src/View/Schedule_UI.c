@@ -31,27 +31,26 @@ void Schedule_UI_MgtEntry(int play_id)
     Paging_Locate_FirstPage(list, paging);
 
     do {
-        printf("\n==================================================================\n");
-        printf("********************** Projection Room List **********************\n");
-        printf("%5s  %18s  %10s  %10s  %10s\n", "ID", "Name", "Studio",
-            "Starttime", "Endtime");
-        printf("------------------------------------------------------------------\n");
+        printf("\n==========================================================================================================\n");
+        printf("****************************************  Schedule List  ****************************************\n");
+        printf("%5s  %-20s  %-15s  %-19s  %-19s\n", "ID", "Name", "Studio", "Start Time", "End Time");
+        printf("----------------------------------------------------------------------------------------------------------\n");
         Paging_ViewPage_ForEach(list, paging, schedule_node_t, pos, i) {
-            printf("%5d  %18s  %18s\n", pos->data.id, pos->data.name, pos->data.studio);
-            printf("%dyear %dmonth %dday %02d:%02d\n",
+            printf("%5d  %-20s  %-15s  %04d-%02d-%02d %02d:%02d  %04d-%02d-%02d %02d:%02d\n",
+                pos->data.id, pos->data.name, pos->data.studio,
                 pos->data.startdate.year, pos->data.startdate.month, pos->data.startdate.day,
-                pos->data.starttime.hour, pos->data.starttime.minute);
-            printf("%dyear %dmonth %dday %02d:%02d\n",
+                pos->data.starttime.hour, pos->data.starttime.minute,
                 pos->data.enddate.year, pos->data.enddate.month, pos->data.enddate.day,
                 pos->data.endtime.hour, pos->data.endtime.minute);
         }
 
-        printf("------- Total Records:%2d ----------------------- Page %2d/%2d ----\n",
+        printf("----------------------------------------------------------------------------------------------------------\n");
+        printf("Total Records:%2d  |  Page %2d/%2d\n",
             paging.totalRecords, Pageing_CurPage(paging),
             Pageing_TotalPages(paging));
-        printf("******************************************************************\n");
+        printf("==========================================================================================================\n");
         printf("[P]revPage | [N]extPage | [A]dd | [D]elete | [U]pdate | [R]eturn\n");
-        printf("==================================================================\n");
+        printf("==========================================================================================================\n");
         
         readString(choice, sizeof(choice), "Your Choice: ");
 
@@ -108,13 +107,24 @@ int Schedule_UI_Add(int play_id)
     int newcount = 0;
     schedule_t new;
     char temp[100];
+    play_t play;
+
+    // 获取剧目信息
+    if (!Play_Srv_FetchByID(play_id, &play)) {
+        printf("Play not found!\n");
+        return 0;
+    }
 
     printf("\n=======================================================\n");
     printf("****************  Add New Show Schedule  ****************\n");
     printf("-------------------------------------------------------\n");
+    printf("Play: %s\n", play.name);
     
-    new.id = readInt("The new Schedule id: ");
-    readString(new.name, sizeof(new.name), "The new Schedule name: ");
+    // ID 由系统自动生成
+    new.id = 0; // 会在 Schedule_Srv_Add 中被覆盖
+    // 自动使用剧目名称作为演出计划名称
+    strncpy(new.name, play.name, sizeof(new.name) - 1);
+    new.name[sizeof(new.name) - 1] = '\0';
     readString(new.studio, sizeof(new.studio), "The new Schedule's studio room: ");
     
     printf("The new Schedule's start data (year month day): ");
@@ -136,7 +146,7 @@ int Schedule_UI_Add(int play_id)
     new.endtime.minute = readInt("  Minute: ");
 
     if (Schedule_Srv_Add(&new)) {
-        printf("New schedule added successfully!\n");
+        printf("New schedule added successfully! Schedule ID: %d\n", new.id);
         newcount = 1;
     }
     else {
