@@ -115,6 +115,8 @@ void Ticket_UI_GenTicket(void) {
     }
     
     printf("Successfully generated %d tickets for schedule ID %d!\n", generatedCount, scheduleId);
+    printf("Press any key to continue...");
+    _getch();
     
     List_Destroy(list, schedule_node_t);
     List_Destroy(seatList, seat_node_t);
@@ -213,6 +215,8 @@ void Ticket_UI_ReGenTicket(void) {
     }
     
     printf("Successfully regenerated %d tickets for schedule ID %d!\n", generatedCount, scheduleId);
+    printf("Press any key to continue...");
+    _getch();
     
     List_Destroy(list, schedule_node_t);
     List_Destroy(existingTickets, ticket_node_t);
@@ -296,6 +300,8 @@ void Ticket_UI_ListTickets(void) {
     }
     
     printf("Total tickets: %d\n", count);
+    printf("Press any key to continue...");
+    _getch();
     List_Destroy(list, ticket_node_t);
 }
 
@@ -333,6 +339,8 @@ void Ticket_UI_AddTicket(void) {
     } else {
         printf("Failed to add ticket!\n");
     }
+    printf("Press any key to continue...");
+    _getch();
 }
 
 void Ticket_UI_DeleteTicket(void) {
@@ -345,6 +353,8 @@ void Ticket_UI_DeleteTicket(void) {
     } else {
         printf("Failed to delete ticket!\n");
     }
+    printf("Press any key to continue...");
+    _getch();
 }
 
 void Ticket_UI_ModifyTicket(void) {
@@ -374,6 +384,8 @@ void Ticket_UI_ModifyTicket(void) {
     } else {
         printf("Failed to modify ticket!\n");
     }
+    printf("Press any key to continue...");
+    _getch();
 }
 
 void Ticket_UI_UpdateTicketStatus(void) {
@@ -432,4 +444,6 @@ void Ticket_UI_UpdateTicketStatus(void) {
     } else {
         printf("Failed to update ticket status!\n");
     }
+    printf("Press any key to continue...");
+    _getch();
 }

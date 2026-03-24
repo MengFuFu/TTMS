@@ -34,5 +34,14 @@ account_node_t* Account_Srv_FindbyUserName(account_list_t list, char username[])
 int Account_Srv_Add(account_t* data);
 int Account_Srv_Modify(account_t* data);
 int Account_Srv_DeleteByID(int ID);
+int Account_Srv_SaveLoginStatus(account_t* user);
+int Account_Srv_LoadLoginStatus(account_t* user);
+void Account_Srv_ClearLoginStatus();
+
+// 权限检查函数
+int Account_Srv_CheckPermission(int requiredRole);
+int Account_Srv_IsAdmin();
+int Account_Srv_IsManager();
+int Account_Srv_IsClerk();
 
 #endif

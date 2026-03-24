@@ -63,7 +63,6 @@ int Ticket_Srv_DeleteByID(int ID) {
 // Return: 1 on success, 0 on failure
 int Ticket_Srv_FetchByID(int ID, ticket_t* buf) {
     if (!buf) return 0;
-    memset(buf, 0, sizeof(ticket_t));
 
     ticket_list_t list;
     List_Init(list, ticket_node_t);

@@ -28,7 +28,6 @@ static int Sale_UI_Login(void) {
 
 int Sale_UI_SellTicket(void) {
     printf("\n================ Sell Ticket ================\n");
-    if (!Sale_UI_Login()) return 0;
 
     int ticketID = 0;
     ticket_t ticket;
@@ -38,18 +37,26 @@ int Sale_UI_SellTicket(void) {
 
     if (!Ticket_Srv_FetchByID(ticketID, &ticket)) {
         printf("Ticket not found!\n");
+        printf("Press any key to continue...");
+        _getch();
         return 0;
     }
     if (ticket.status != TICKET_AVL) {
         printf("Ticket is not available for sale (status=%d)!\n", ticket.status);
+        printf("Press any key to continue...");
+        _getch();
         return 0;
     }
     if (!Seat_Srv_FetchByID(ticket.seat_id, &seat)) {
         printf("Seat not found for this ticket!\n");
+        printf("Press any key to continue...");
+        _getch();
         return 0;
     }
     if (seat.status != SEAT_GOOD) {
         printf("Seat is not available (status=%d)!\n", seat.status);
+        printf("Press any key to continue...");
+        _getch();
         return 0;
     }
 
@@ -58,6 +65,8 @@ int Sale_UI_SellTicket(void) {
     ticket.time = TimeNow();
     if (!Ticket_Srv_Update(&ticket)) {
         printf("Failed to update ticket status!\n");
+        printf("Press any key to continue...");
+        _getch();
         return 0;
     }
 
@@ -66,6 +75,8 @@ int Sale_UI_SellTicket(void) {
         ticket.status = TICKET_AVL;
         Ticket_Srv_Update(&ticket);
         printf("Failed to update seat status!\n");
+        printf("Press any key to continue...");
+        _getch();
         return 0;
     }
 
@@ -87,16 +98,19 @@ int Sale_UI_SellTicket(void) {
         seat.status = SEAT_GOOD;
         Seat_Srv_Modify(&seat);
         printf("Failed to insert sale record!\n");
+        printf("Press any key to continue...");
+        _getch();
         return 0;
     }
 
     printf("Sell success! TicketID=%d SeatID=%d\n", ticket.id, ticket.seat_id);
+    printf("Press any key to continue...");
+    _getch();
     return 1;
 }
 
 int Sale_UI_ReturnTicket(void) {
     printf("\n================ Return Ticket ================\n");
-    if (!Sale_UI_Login()) return 0;
 
     int ticketID = 0;
     ticket_t ticket;
@@ -106,10 +120,14 @@ int Sale_UI_ReturnTicket(void) {
 
     if (!Ticket_Srv_FetchByID(ticketID, &ticket)) {
         printf("Ticket not found!\n");
+        printf("Press any key to continue...");
+        _getch();
         return 0;
     }
     if (ticket.status != TICKET_SOLD) {
         printf("Ticket is not sold yet (status=%d)!\n", ticket.status);
+        printf("Press any key to continue...");
+        _getch();
         return 0;
     }
 
@@ -118,16 +136,22 @@ int Sale_UI_ReturnTicket(void) {
     ticket.time = TimeNow();
     if (!Ticket_Srv_Update(&ticket)) {
         printf("Failed to update ticket status!\n");
+        printf("Press any key to continue...");
+        _getch();
         return 0;
     }
 
     if (!Seat_Srv_FetchByID(ticket.seat_id, &seat)) {
         printf("Seat not found for this ticket!\n");
+        printf("Press any key to continue...");
+        _getch();
         return 0;
     }
     seat.status = SEAT_GOOD;
     if (!Seat_Srv_Modify(&seat)) {
         printf("Failed to update seat status!\n");
+        printf("Press any key to continue...");
+        _getch();
         return 0;
     }
 
@@ -150,6 +174,8 @@ int Sale_UI_ReturnTicket(void) {
     }
 
     printf("Return success! TicketID=%d SeatID=%d\n", ticket.id, ticket.seat_id);
+    printf("Press any key to continue...");
+    _getch();
     return 1;
 }
 
@@ -164,6 +190,8 @@ void Sale_UI_QuerySale(void) {
         printf("ID:%d TicketID:%d Price:%.2f\n", pos->data.id, pos->data.ticket_id, pos->data.price);
     }
     List_Destroy(list, sale_node_t);
+    printf("Press any key to continue...");
+    _getch();
 }
 
 void Sale_UI_MgtEntry(void) {
