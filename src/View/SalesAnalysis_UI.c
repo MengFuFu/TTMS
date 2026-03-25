@@ -33,19 +33,20 @@ void SalesAnalysis_UI_MgtEn() {
     Paging_Locate_FirstPage(head, paging);
     do {
         system("cls");
-        printf("\n=============================================================================================================\n");
-        printf("                                             Box Office Ranking                                                        \n");
-        printf("%5s %18s %18s %10s %10s %10s %10s %9s %9s\n", "PlayID", "PlayName", "Area", "Duration", "Tickets", "Sales", "Price", "StartDate", "EndDate");
-        printf("---------------------------------------------------------------------------------------------------------------\n");
+        printf("\n========================================================================================================================\n");
+        printf("                                                  Box Office Ranking                                                  \n");
+        printf("%-6s %-20s %-10s %-8s %-8s %-10s %-6s %-12s %-12s\n",
+            "PlayID", "PlayName", "Area", "Duration", "Tickets", "Sales", "Price", "StartDate", "EndDate");
+        printf("------------------------------------------------------------------------------------------------------------------------\n");
         for (i = 0, pos = (salesanalysis_node_t*)paging.curPos; pos != head && i < paging.pageSize; i++) {
-            printf("%5d %18s %18s %10d %10ld %10ld %10d %04d-%02d-%02d %04d-%02d-%02d\n",
+            printf("%-6d %-20s %-10s %-8d %-8ld %-10ld %-6d %04d-%02d-%02d   %04d-%02d-%02d\n",
                 pos->data.play_id, pos->data.name, pos->data.area, pos->data.duration,
                 pos->data.totaltickets, pos->data.sales, pos->data.price,
                 pos->data.start_date.year, pos->data.start_date.month, pos->data.start_date.day,
                 pos->data.end_date.year, pos->data.end_date.month, pos->data.end_date.day);
             pos = pos->next;
         }
-        printf("\t\t\t-------------------Total:%2d--------------------Page %2d/%2d-------------------------------------------\n",
+        printf("---------------------------------------- Total: %-3d ------------------------ Page %2d/%-2d ----------------------------------------\n",
             paging.totalRecords, Pageing_CurPage(paging), Pageing_TotalPages(paging));
         printf("\nOptions: [P]rev Page | [N]ext Page | [R]eturn\n");
         

@@ -183,7 +183,7 @@ int Schedule_UI_Modify(int id)
     }
 
     if (!found) {
-        printf("The schedule does not exist!\nPress [Enter] to return!\n");
+        printf("The schedule does not exist!\nPress [R / r] to return!\n");
         readString(temp, sizeof(temp), "");
         List_Destroy(list, schedule_node_t);
         return 0;
@@ -222,11 +222,11 @@ int Schedule_UI_Modify(int id)
     printf("-------------------------------------------------------\n");
 
     if (Schedule_Srv_Modify(&rec)) {
-        printf("The schedule data updated successfully!\nPress [Enter] key to return!\n");
+        printf("The schedule data updated successfully!\nPress [R / r] key to return!\n");
         rtn = 1;
     }
     else {
-        printf("The schedule data update failed!\nPress [Enter] key to return!\n");
+        printf("The schedule data update failed!\nPress [R / r] key to return!\n");
         rtn = 0;
     }
 

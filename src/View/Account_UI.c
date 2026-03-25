@@ -110,8 +110,8 @@ int SysLogin(void)
     // 尝试自动登录
     if (Account_Srv_LoadLoginStatus(&gl_CurUser))
     {
-        printf("Auto login success! Welcome back, %s!\n", gl_CurUser.username);
-        printf("Press any key to continue...");
+        printf("\t\t\tAuto login success! Welcome back, %s!\n", gl_CurUser.username);
+        printf("\t\t\tPress any key to continue...");
         _getch();
         return 1;
     }
@@ -188,7 +188,7 @@ int SysLogin(void)
             
             if (Account_Srv_Verify(username, password))
             {
-                printf("Login success!\n");
+                printf("\t\t\tLogin success!\n");
                 Account_Srv_FetchByName(username, &buf);
                 strcpy(gl_CurUser.username, buf.username);
                 strcpy(gl_CurUser.password, buf.password);
@@ -198,29 +198,29 @@ int SysLogin(void)
                 // 保存登录状态
                 Account_Srv_SaveLoginStatus(&gl_CurUser);
                 
-                printf("Press any key to continue...");
+                printf("\t\t\tPress any key to continue...");
                 _getch();
                 return 1;
             }
             
             loginAttempts++;
-            printf("Username or password error! Attempts left: %d\n", MAX_ATTEMPTS - loginAttempts);
-            printf("Press any key to continue...");
+            printf("\t\t\tUsername or password error! Attempts left: %d\n", MAX_ATTEMPTS - loginAttempts);
+            printf("\t\t\tPress any key to continue...");
             _getch();
             break;
         }
         case 'R':
         case 'r':
             SysRegister();
-            printf("Press any key to return to login menu...");
+            printf("\t\t\tPress any key to return to login menu...");
             _getch();
             break;
         case 'E':
         case 'e':
             return 0;
         default:
-            printf("Invalid choice!\n");
-            printf("Press any key to continue...");
+            printf("\t\t\tInvalid choice!\n");
+            printf("\t\t\tPress any key to continue...");
             _getch();
             break;
         }
@@ -246,22 +246,22 @@ void Account_UI_MgtEntry(void)
     {
         system("cls");
 
-        printf("\n=================================================\n");
-        printf(" User Information\n");
-        printf("%5s %18s %10s %10s \n", "ID", "User Type", "Name", "Password");
-        printf("\n-------------------------------------------------\n");
+        printf("\n======================================================================\n");
+        printf("                          User Information                          \n");
+        printf("%-6s %-12s %-15s %-20s\n", "ID", "User Type", "Name", "Password");
+        printf("----------------------------------------------------------------------\n");
         Paging_ViewPage_ForEach(head, paging, account_node_t, pos, i)
         {
-            printf("%5d %18d %10s %10s \n", pos->data.id, pos->data.type, pos->data.username, pos->data.password);
+            printf("%-6d %-12d %-15s %-20s\n", pos->data.id, pos->data.type, pos->data.username, pos->data.password);
         }
 
-        printf("-------------------Page %2d/%2d---------------------\n",
+        printf("------------------------------ Page %2d/%2d ------------------------------\n",
             Pageing_CurPage(paging), Pageing_TotalPages(paging));
         printf("***************************************************\n");
         printf("[P]rev [N]ext [A]dd [D]elete [U]pdate [S]earch [R]eturn\n");
         printf("\n=====================================================\n");
         
-        readString(choice, sizeof(choice), "\t\t\tInput choice: ");
+        readString(choice, sizeof(choice), "Input choice: ");
 
         switch (choice[0])
         {
@@ -275,7 +275,7 @@ void Account_UI_MgtEntry(void)
             break;
         case 'd':
         case 'D':
-            readString(username, sizeof(username), "\t\t\tInput username to delete:");
+            readString(username, sizeof(username), "Input username to delete:");
             if (Account_UI_Delete(head, username))
             {
                 paging.totalRecords = Account_Srv_FetchAll(head);
@@ -284,7 +284,7 @@ void Account_UI_MgtEntry(void)
             break;
         case 'u':
         case 'U':
-            readString(username, sizeof(username), "\t\t\tInput username to modify:");
+            readString(username, sizeof(username), "Input username to modify:");
             if (Account_UI_Modify(head, username))
             {
                 paging.totalRecords = Account_Srv_FetchAll(head);
@@ -293,7 +293,7 @@ void Account_UI_MgtEntry(void)
             break;
         case 's':
         case 'S':
-            readString(username, sizeof(username), "\t\t\tInput username to search:");
+            readString(username, sizeof(username), "Input username to search:");
             if (Account_UI_Query(head, username))
             {
                 paging.totalRecords = Account_Srv_FetchAll(head);
@@ -322,7 +322,7 @@ void Account_UI_MgtEntry(void)
             break;
         }
 
-        printf("Press any key to continue...");
+        printf("Press any [R / r] to continue...");
         Safe_Flush_Stdin();
         _getch();
     } while (choice[0] != 'r' && choice[0] != 'R');
@@ -340,15 +340,15 @@ int Account_UI_Add(account_list_t list)
     
     memset(&newAccount, 0, sizeof(account_t));
 
-    readString(newAccount.username, sizeof(newAccount.username), "\t\t\tInput new username:");
+    readString(newAccount.username, sizeof(newAccount.username), "Input new username:");
 
     if (Account_Srv_FindByUserName(list, newAccount.username) != NULL)
     {
-        printf("\t\t\tUsername already exists!\n");
+        printf("Username already exists!\n");
         return 0;
     }
 
-    printf("\t\t\tInput new password:");
+    printf("Input new password:");
     while (1)
     {
         ch = _getch();
@@ -426,20 +426,20 @@ int Account_UI_Modify(account_list_t list, char userName[])
     char pwd[20] = { 0 };
     if (p == NULL)
     {
-        printf("\t\t\tAccount not found!\n");
+        printf("Account not found!\n");
         return 0;
     }
 
     printf("Current info: %s\n", p->data.username);
-    readString(pwd, sizeof(pwd), "\t\t\tInput new password:");
+    readString(pwd, sizeof(pwd), "Input new password:");
     strcpy(p->data.password, pwd);
 
     if (Account_Srv_Modify(&p->data))
     {
-        printf("\t\t\tModify success!\n");
+        printf("Modify success!\n");
         return 1;
     }
-    printf("\t\t\tModify failed!\n");
+    printf("Modify failed!\n");
     return 0;
 }
 
@@ -448,7 +448,7 @@ int Account_UI_Delete(account_list_t list, char userName[])
     account_list_t p = Account_Srv_FindByUserName(list, userName);
     if (p == NULL)
     {
-        printf("\t\t\tAccount not found!\n");
+        printf("Account not found!\n");
         return 0;
     }
 

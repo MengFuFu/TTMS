@@ -144,7 +144,7 @@ int Play_UI_Modify(int id) {
     char temp[10] = { 0 };
 
     if (!Play_Srv_FetchByID(id, &rec)) {
-        printf("Play not found!\nPress Enter to return...");
+        printf("Play not found!\nPress [R / r] to return..\n.");
         readString(temp, sizeof(temp), "");
         return 0;
     }
@@ -168,10 +168,10 @@ int Play_UI_Modify(int id) {
 
     if (Play_Srv_Modify(&rec)) {
         rtn = 1;
-        printf("Update success!\nPress Enter to return...");
+        printf("Update success!\nPress [R / r] to return...\n");
     }
     else {
-        printf("Update failed!\nPress Enter to return...");
+        printf("Update failed!\nPress [R / r] to return...\n");
     }
     readString(temp, sizeof(temp), "");
     return rtn;
@@ -183,10 +183,10 @@ int Play_UI_Delete(int id) {
 
     if (Play_Srv_DeleteByID(id)) {
         rtn = 1;
-        printf("Delete success!\nPress Enter to return...");
+        printf("Delete success!\nPress [R / r] to return...\n");
     }
     else {
-        printf("Play not found!\nPress Enter to return...");
+        printf("Play not found!\nPress [R / r] to return...\n");
     }
     readString(temp, sizeof(temp), "");
     return rtn;
@@ -221,5 +221,5 @@ void Play_UI_Query(play_list_t list) {
     if (!found) printf("No matching play found!\n");
     printf("==========================================================================================================\n");
     char temp[10] = { 0 };
-    readString(temp, sizeof(temp), "Press Enter to return...");
+    readString(temp, sizeof(temp), "Press [R / r] to return...\n");
 }
