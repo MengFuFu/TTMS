@@ -55,7 +55,7 @@ void Main_Menu(void) {
             printf("[T]icket Sale.\n");
             printf("[Q]ueries\n");
             printf("[K]Ticket Information.\n");
-            printf("[Z]Seat Information.\n");
+           // printf("[Z]Seat Information.\n");
             printf("[E]xit.\n");
             printf("[L]ogout.\n");
             break;

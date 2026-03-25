@@ -84,7 +84,7 @@ int Sale_UI_SellTicket(void) {
     memset(&sale, 0, sizeof(sale));
     sale.user_id = gl_CurUser.id;
     sale.ticket_id = ticket.id;
-    sale.price = ticket.price;
+    sale.price = (int)ticket.price;
     {
         user_date_t d = DateNow();
         user_time_t t = TimeNow();
@@ -187,7 +187,7 @@ void Sale_UI_QuerySale(void) {
     printf("Total: %d sales\n", count);
     sale_node_t* pos;
     List_ForEach(list, pos) {
-        printf("ID:%d TicketID:%d Price:%.2f\n", pos->data.id, pos->data.ticket_id, pos->data.price);
+        printf("ID:%d TicketID:%d Price:%d\n", pos->data.id, pos->data.ticket_id, pos->data.price);
     }
     List_Destroy(list, sale_node_t);
     printf("Press any key to continue...");

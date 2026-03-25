@@ -26,6 +26,6 @@ int StaSales_Srv_CompSaleVal(int userID, user_date_t stDate, user_date_t endDate
 int Salesanalysis_Srv_StaticSale(salesanalysis_list_t list);
 void SalesAnalysis_Srv_SortBySale(salesanalysis_list_t list);
 void SalesAnalysis_Srv_AddToSoftedList(salesanalysis_list_t list, salesanalysis_node_t* node);
-int Schedule_Srv_StatRevByPlay(int play_id, int* soldCount, int* totalCount);
+int Schedule_Srv_StatRevByPlay(int play_id, int* soldCount, int* totalCount, int* avgPrice);
 
 #endif
